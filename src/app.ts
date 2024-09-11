@@ -1,6 +1,5 @@
 import express from 'express'
 import cors from 'cors'
-import {getVideosController} from './videos/getVideosController'
 import {SETTINGS} from './settings'
 import {videosRouter} from './videos'
 
