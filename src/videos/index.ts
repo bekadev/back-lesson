@@ -43,7 +43,7 @@ const videoController = {
       // если всё ок - добавляем видео
       const newVideo: any /*VideoDBType*/ = {
         ...req.body,
-        id: Date.now() + Math.random(),
+        id: (new Date().toISOString()),
         title: req.body.title,
         author: 'me',
         // ...
@@ -70,11 +70,20 @@ const videoController = {
     res.status(204)
   },
   updateVideo: (req: Request, res: Response<any>) => {
+      let title = req.body.title
+    if (!title || typeof title !== 'string' || !title.trim()) {
+      res.status(400).send({
+        errorsMessages: [{
+          "message": "title is required",
+          "field": "title",
+        }]
+      })
+    }
       const id = +req.params.id
     const video = db.videos.find(p => p.id === id)
 
     if (video) {
-      video.title = req.body.title
+      video.title = title
       res.status(204)
     } else {
       res.status(404)
