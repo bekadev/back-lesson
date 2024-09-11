@@ -1,4 +1,5 @@
-import {Request, Response} from 'express'
+import {Request, Response, Router} from 'express'
+import {db} from "../db/db";
 
 export type ParamType = {
     id: string
@@ -16,9 +17,14 @@ export type QueryType = {
 
 export type OutputType = void /*| OutputErrorsType | OutputVideoType*/
 
-export const someController = (
-    req: Request<ParamType, OutputType, BodyType, QueryType>,
-    res: Response<OutputType>
-) => {
+export const someRouter = Router()
 
+export const someController = {
+  deleteAllData: (req: Request<ParamType, OutputType>, res: Response<OutputType>) => {
+    db.videos = []
+    res
+      .sendStatus(204)
+  }
 }
+
+someRouter.delete('/', someController.deleteAllData)
