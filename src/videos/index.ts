@@ -44,13 +44,15 @@ const videoController = {
       const newVideo: any /*VideoDBType*/ = {
         ...req.body,
         id: Date.now() + Math.random(),
+        title: req.body.title,
+        author: 'me',
         // ...
       }
       db.videos = [...db.videos, newVideo]
 
       res
         .status(201)
-        .json(newVideo)
+        .send(newVideo)
     },
   findVideo: (req: Request, res: Response<any>) => {
       const foundVideo = db.videos.find(p => p.id === +req.params.id)
@@ -66,6 +68,17 @@ const videoController = {
     db.videos = db.videos.filter(p => p.id !== +req.params.id)
 
     res.status(204)
+  },
+  updateVideo: (req: Request, res: Response<any>) => {
+      const id = +req.params.id
+    const video = db.videos.find(p => p.id === id)
+
+    if (video) {
+      video.title = req.body.title
+      res.status(204)
+    } else {
+      res.status(404)
+    }
   }
 }
 
@@ -73,6 +86,7 @@ videosRouter.get('/', videoController.getVideos)
 videosRouter.post('/', videoController.createVideo)
 videosRouter.get('/:id', videoController.findVideo)
 videosRouter.delete('/:id', videoController.deleteVideo)
+videosRouter.put('/:id', videoController.updateVideo)
 // ...
 
 // не забудьте добавить роут в апп
