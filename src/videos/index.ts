@@ -45,7 +45,7 @@ const videoController = {
       const createdAt = new Date().toISOString()
       // если всё ок - добавляем видео
       const newVideo: OutputVideoType /*VideoDBType*/ = {
-        id: Date.now() + Math.random(),
+        id: Date.now(),
         title: req.body.title,
         author: req.body.author,
         canBeDownloaded: false,
@@ -61,14 +61,13 @@ const videoController = {
         .send(newVideo)
     },
   findVideo: (req: Request, res: Response<any>) => {
-      const foundVideo = db.videos.find(p => p.id === +req.params.id)
+    const video = db.videos.find(p => p.id === +req.params.id)
 
-    if (!foundVideo) {
+    if (video){
+      res.send(video)
+    } else {
       res.status(404)
-      return
     }
-
-    res.json(foundVideo)
   },
   deleteVideo: (req: Request, res: Response<any>) => {
       for (let i = 0; i < db.videos.length; i++) {
@@ -79,16 +78,6 @@ const videoController = {
         }
       }
     res.status(404)
-      // const video = db.videos.find(p => p.id === +req.params.id)
-    // db.videos = db.videos.filter(p => p.id !== +req.params.id)
-
-    // if (video){
-    //   res.send(video)
-    // } else {
-    //   res.status(404)
-    // }
-    //
-    // res.status(204)
   },
   updateVideo: (req: Request, res: Response<any>) => {
     //   let title = req.body.title
