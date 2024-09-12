@@ -1,6 +1,6 @@
 import {Request, Response, Router} from 'express'
 import {db} from "../db/db";
-import {InputVideoType, Resolutions} from "../input-output-types/video-types";
+import {InputVideoType, OutputVideoType, Resolutions} from "../input-output-types/video-types";
 import {OutputErrorsType} from "../input-output-types/output-errors-type";
 
 export const videosRouter = Router()
@@ -45,12 +45,15 @@ const videoController = {
       }
 
       // если всё ок - добавляем видео
-      const newVideo: any /*VideoDBType*/ = {
-        ...req.body,
-        id: (new Date().toISOString()),
+      const newVideo: OutputVideoType /*VideoDBType*/ = {
+        id: Date.now() + Math.random(),
         title: req.body.title,
         author: 'me',
-        // ...
+        canBeDownloaded: true,
+        minAgeRestriction: null,
+        createdAt: (new Date().toISOString()),
+        publicationDate: (new Date().toISOString()),
+        availableResolutions: req.body.availableResolutions,
       }
       db.videos = [...db.videos, newVideo]
 
