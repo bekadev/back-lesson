@@ -66,7 +66,7 @@ const videoController = {
     if (video){
       res.send(video)
     } else {
-      res.status(404)
+      res.sendStatus(404)
     }
   },
   deleteVideo: (req: Request, res: Response<any>) => {
