@@ -1,9 +1,65 @@
 import {Request, Response, Router} from 'express'
 import {db} from "../db/db";
-import {InputVideoType, OutputVideoType, Resolutions} from "../input-output-types/video-types";
+import {InputVideoType, OutputVideoType, OutputVideoUpdatedType, Resolutions} from "../input-output-types/video-types";
 import {OutputErrorsType} from "../input-output-types/output-errors-type";
 import dateFns from "date-fns"
 export const videosRouter = Router()
+
+const outputValidation = (video: OutputVideoUpdatedType) => {
+  const errors: OutputErrorsType = {
+    errorsMessages: []
+  }
+
+  if (typeof video.title !== 'string' || !video.title.trim()) {
+    errors.errorsMessages.push({
+      message: 'Title must be a non-empty string',
+      field: 'title'
+    });
+  }
+
+  if (typeof video.author !== 'string' || !video.author.trim()) {
+    errors.errorsMessages.push({
+      message: 'Author must be a non-empty string',
+      field: 'author'
+    });
+  }
+
+  if (!Array.isArray(video.availableResolutions)) {
+    errors.errorsMessages.push({
+      message: 'Available Resolutions must be an array',
+      field: 'availableResolutions'
+    });
+  } else if (video.availableResolutions.some(res => !Resolutions[res])) {
+    errors.errorsMessages.push({
+      message: 'One or more resolutions are invalid',
+      field: 'availableResolutions'
+    });
+  }
+
+  if (typeof video.canBeDownloaded !== 'boolean') {
+    errors.errorsMessages.push({
+      message: 'CanBeDownloaded must be a boolean',
+      field: 'canBeDownloaded'
+    });
+  }
+
+  if (video.minAgeRestriction !== null && typeof video.minAgeRestriction !== 'number') {
+    errors.errorsMessages.push({
+      message: 'MinAgeRestriction must be a number or null',
+      field: 'minAgeRestriction'
+    });
+  }
+
+  if (video.publicationDate && isNaN(Date.parse(video.publicationDate))) {
+    errors.errorsMessages.push({
+      message: 'PublicationDate must be a valid ISO date string',
+      field: 'publicationDate'
+    });
+  }
+
+  return errors
+
+}
 
 const inputValidation = (video: InputVideoType) => {
   const errors: OutputErrorsType = {
@@ -87,7 +143,15 @@ const videoController = {
       }
     res.sendStatus(404)
   },
-  updateVideo: (req: Request, res: Response<any>) => {
+  updateVideo: (req: Request<any, any, OutputVideoUpdatedType>, res: Response<any>) => {
+    const errors = outputValidation(req.body)
+    if (errors.errorsMessages.length) { // если есть ошибки - отправляем ошибки
+      res
+        .status(400)
+        .json(errors)
+      return
+      // return res.status(400).json(errors)
+    }
     const video = db.videos.find(p => p.id === +req.params.id)
 
     if (video) {
