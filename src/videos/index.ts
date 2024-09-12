@@ -47,7 +47,7 @@ const videoController = {
       const newVideo: OutputVideoType /*VideoDBType*/ = {
         id: Date.now() + Math.random(),
         title: req.body.title,
-        author: 'me',
+        author: req.body.author,
         canBeDownloaded: false,
         minAgeRestriction: null,
         createdAt,
@@ -71,9 +71,24 @@ const videoController = {
     res.json(foundVideo)
   },
   deleteVideo: (req: Request, res: Response<any>) => {
-    db.videos = db.videos.filter(p => p.id !== +req.params.id)
+      for (let i = 0; i < db.videos.length; i++) {
+        if (db.videos[i].id === +req.params.id) {
+          db.videos.splice(i, 1)
+          res.status(204)
+          return
+        }
+      }
+    res.status(404)
+      // const video = db.videos.find(p => p.id === +req.params.id)
+    // db.videos = db.videos.filter(p => p.id !== +req.params.id)
 
-    res.status(204)
+    // if (video){
+    //   res.send(video)
+    // } else {
+    //   res.status(404)
+    // }
+    //
+    // res.status(204)
   },
   updateVideo: (req: Request, res: Response<any>) => {
     //   let title = req.body.title
