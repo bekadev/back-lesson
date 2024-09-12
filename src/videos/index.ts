@@ -51,8 +51,8 @@ const videoController = {
         author: 'me',
         canBeDownloaded: true,
         minAgeRestriction: null,
-        createdAt: '2024-09-12T13:02:43.797Z',
-        publicationDate: '2024-09-12T13:02:43.797Z',
+        createdAt: '2024-09-13T13:02:43.797Z',
+        publicationDate: '2024-09-13T13:02:43.797Z',
         availableResolutions: req.body.availableResolutions,
       }
       db.videos = [...db.videos, newVideo]
