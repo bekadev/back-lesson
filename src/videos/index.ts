@@ -73,11 +73,11 @@ const videoController = {
       for (let i = 0; i < db.videos.length; i++) {
         if (db.videos[i].id === +req.params.id) {
           db.videos.splice(i, 1)
-          res.status(204)
+          res.sendStatus(204)
           return
         }
       }
-    res.status(404)
+    res.sendStatus(404)
   },
   updateVideo: (req: Request, res: Response<any>) => {
     //   let title = req.body.title
