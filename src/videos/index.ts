@@ -80,23 +80,18 @@ const videoController = {
     res.sendStatus(404)
   },
   updateVideo: (req: Request, res: Response<any>) => {
-    //   let title = req.body.title
-    // if (!title || typeof title !== 'string' || !title.trim()) {
-    //   res.status(400).send({
-    //     errorsMessages: [{
-    //       "message": "title is required",
-    //       "field": "title",
-    //     }]
-    //   })
-    // }
-      const id = +req.params.id
-    const video = db.videos.find(p => p.id === id)
+    const video = db.videos.find(p => p.id === +req.params.id)
 
     if (video) {
-      video.title = req.body.title
-      res.status(204)
+        video.title =  req.body.title
+        video.author = req.body.author
+        video.availableResolutions = req.body.availableResolutions
+        video.canBeDownloaded = req.body.canBeDownloaded
+        video.minAgeRestriction = req.body.minAgeRestriction
+        video.publicationDate = req.body.publicationDate
+      res.send(video)
     } else {
-      res.status(404)
+      res.sendStatus(404)
     }
   }
 }
