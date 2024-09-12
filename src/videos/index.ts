@@ -2,14 +2,13 @@ import {Request, Response, Router} from 'express'
 import {db} from "../db/db";
 import {InputVideoType, OutputVideoType, Resolutions} from "../input-output-types/video-types";
 import {OutputErrorsType} from "../input-output-types/output-errors-type";
-
+import dateFns from "date-fns"
 export const videosRouter = Router()
 
 const inputValidation = (video: InputVideoType) => {
-  const errors: OutputErrorsType = { // объект для сбора ошибок
+  const errors: OutputErrorsType = {
     errorsMessages: []
   }
-// ...
   if (!Array.isArray(video.availableResolutions)) {
     console.log('1')
     errors.errorsMessages.push({
@@ -43,7 +42,7 @@ const videoController = {
         return
         // return res.status(400).json(errors)
       }
-
+      const createdAt = new Date().toISOString()
       // если всё ок - добавляем видео
       const newVideo: OutputVideoType /*VideoDBType*/ = {
         id: Date.now() + Math.random(),
@@ -51,8 +50,8 @@ const videoController = {
         author: 'me',
         canBeDownloaded: true,
         minAgeRestriction: null,
-        createdAt: "2024-09-12T13:02:43.797Z",
-        publicationDate: "2024-10-12T13:02:43.797Z",
+        createdAt,
+        publicationDate: dateFns.addDays(createdAt, 1).toISOString(),
         availableResolutions: req.body.availableResolutions,
       }
       db.videos = [...db.videos, newVideo]
