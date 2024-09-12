@@ -2,8 +2,6 @@ import {Request, Response, Router} from 'express'
 import {db} from "../db/db";
 import {InputVideoType, Resolutions} from "../input-output-types/video-types";
 import {OutputErrorsType} from "../input-output-types/output-errors-type";
-// import {findVideoController} from './findVideoController'
-// import {deleteVideoController} from './deleteVideoController'
 
 export const videosRouter = Router()
 
@@ -12,12 +10,18 @@ const inputValidation = (video: InputVideoType) => {
     errorsMessages: []
   }
 // ...
-  if (!Array.isArray(video.availableResolution)
-    || video.availableResolution.find(p => !Resolutions[p])
-  ) {
+  if (!Array.isArray(video.availableResolutions)) {
+    console.log('1')
     errors.errorsMessages.push({
       message: 'error!!!!', field: 'availableResolution'
     })
+  }
+  console.log(video)
+    if (video.availableResolutions.find(p => !Resolutions[p]))  {
+      console.log('2')
+      errors.errorsMessages.push({
+        message: 'error!!!!', field: 'availableResolution'
+      })
   }
   return errors
 }
@@ -94,8 +98,5 @@ const videoController = {
 videosRouter.get('/', videoController.getVideos)
 videosRouter.post('/', videoController.createVideo)
 videosRouter.get('/:id', videoController.findVideo)
-videosRouter.delete('/:id', videoController.deleteVideo)
 videosRouter.put('/:id', videoController.updateVideo)
-// ...
-
-// не забудьте добавить роут в апп
+videosRouter.delete('/:id', videoController.deleteVideo)
