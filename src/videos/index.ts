@@ -10,7 +10,7 @@ const outputValidation = (video: OutputVideoUpdatedType) => {
     errorsMessages: []
   }
 
-  if (typeof video.title !== 'string' || !video.title.trim()) {
+  if (typeof video.title !== 'string' || typeof video.title !== null) {
     errors.errorsMessages.push({
       message: 'Title must be a non-empty string',
       field: 'title'
