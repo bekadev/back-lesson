@@ -90,8 +90,8 @@ const videoController = {
         video.minAgeRestriction = req.body.minAgeRestriction
         video.publicationDate = req.body.publicationDate
       res
+        .status(204)
         .send(video)
-        .sendStatus(204)
     } else {
       res.sendStatus(404)
     }
