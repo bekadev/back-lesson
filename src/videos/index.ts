@@ -48,7 +48,7 @@ const videoController = {
         id: Date.now() + Math.random(),
         title: req.body.title,
         author: 'me',
-        canBeDownloaded: true,
+        canBeDownloaded: false,
         minAgeRestriction: null,
         createdAt,
         publicationDate: dateFns.addDays(createdAt, 1).toISOString(),
