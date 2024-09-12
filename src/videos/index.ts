@@ -89,7 +89,9 @@ const videoController = {
         video.canBeDownloaded = req.body.canBeDownloaded
         video.minAgeRestriction = req.body.minAgeRestriction
         video.publicationDate = req.body.publicationDate
-      res.send(video)
+      res
+        .send(video)
+        .sendStatus(204)
     } else {
       res.sendStatus(404)
     }
