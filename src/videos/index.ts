@@ -51,8 +51,8 @@ const videoController = {
         author: 'me',
         canBeDownloaded: true,
         minAgeRestriction: null,
-        createdAt: (new Date().toISOString()),
-        publicationDate: (new Date().toISOString()),
+        createdAt: new Date().toISOString(),
+        publicationDate: new Date().toISOString(),
         availableResolutions: req.body.availableResolutions,
       }
       db.videos = [...db.videos, newVideo]
