@@ -77,7 +77,7 @@ const videoController = {
           return
         }
       }
-    res.sendStatus(404)
+    res.send(404)
   },
   updateVideo: (req: Request, res: Response<any>) => {
     const video = db.videos.find(p => p.id === +req.params.id)
