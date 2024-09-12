@@ -29,9 +29,17 @@ const videoController = {
     getVideos: (req: Request, res: Response<any /*OutputVideoType[]*/>) => {
         const videos = db.videos // получаем видео из базы данных
 
+        // res
+        //     .status(200)
+        //     .json(videos) // отдаём видео в качестве ответа
+
+      if (videos.length){
         res
-            .status(200)
-            .json(videos) // отдаём видео в качестве ответа
+          .status(200)
+          .json(videos)
+      } else {
+        res.sendStatus(404)
+      }
     },
     createVideo: (req: Request<any, any, InputVideoType>, res: Response<any /*OutputVideoType*/ | OutputErrorsType>) => {
       const errors = inputValidation(req.body)
