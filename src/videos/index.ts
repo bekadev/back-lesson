@@ -10,12 +10,17 @@ const outputValidation = (video: OutputVideoUpdatedType) => {
     errorsMessages: []
   }
 
-  if (typeof video.title === null && typeof video.title !== 'string' ) {
-    errors.errorsMessages.push({
-      message: 'Title must be a non-empty string',
-      field: 'title'
-    });
+  // if (typeof video.title === null && typeof video.title !== 'string' ) {
+  //   errors.errorsMessages.push({
+  //     message: 'Title must be a non-empty string',
+  //     field: 'title'
+  //   });
+  // }
+
+  if (!video.title || typeof video.title !== 'string' || !video.title.trim() || video.title.length >= 41){
+    errors.errorsMessages.push({ message: 'string', field: "title" })
   }
+
 
   if (typeof video.author !== 'string' || !video.author.trim() || video.author.length >= 20) {
     errors.errorsMessages.push({
@@ -36,9 +41,6 @@ const outputValidation = (video: OutputVideoUpdatedType) => {
     });
   }
 
-  if (!video.title || typeof video.title !== 'string' || !video.title.trim() || video.title.length >= 41){
-    errors.errorsMessages.push({ message: 'string', field: "title" })
-  }
 
   if (typeof video.canBeDownloaded !== 'boolean') {
     errors.errorsMessages.push({
