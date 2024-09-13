@@ -19,7 +19,7 @@ export type OutputVideoType = {
     title: string
     author: string
     canBeDownloaded: boolean
-    minAgeRestriction: null
+    minAgeRestriction: number | null
     createdAt: string
     publicationDate: string
     availableResolutions: Resolutions[]
@@ -30,7 +30,7 @@ export type OutputVideoUpdatedType = {
   author: string
   availableResolutions?: Resolutions[]
   canBeDownloaded?: boolean
-  minAgeRestriction?: null
+  minAgeRestriction?: number
   publicationDate?: string
 }
 

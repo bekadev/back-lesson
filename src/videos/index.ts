@@ -10,7 +10,7 @@ const outputValidation = (video: OutputVideoUpdatedType) => {
     errorsMessages: []
   }
 
-  if (typeof video.title !== 'string' || typeof video.title !== null) {
+  if (typeof video.title !== 'string' || typeof video.title === null) {
     errors.errorsMessages.push({
       message: 'Title must be a non-empty string',
       field: 'title'
@@ -43,11 +43,13 @@ const outputValidation = (video: OutputVideoUpdatedType) => {
     });
   }
 
-  if (video.minAgeRestriction !== null && typeof video.minAgeRestriction !== 'number') {
-    errors.errorsMessages.push({
-      message: 'MinAgeRestriction must be a number or null',
-      field: 'minAgeRestriction'
-    });
+  if (video.minAgeRestriction){
+    if (video.minAgeRestriction !== null && typeof video.minAgeRestriction !== 'number' && (video.minAgeRestriction < 1 || video.minAgeRestriction > 18)) {
+      errors.errorsMessages.push({
+        message: 'MinAgeRestriction must be a number or null',
+        field: 'minAgeRestriction'
+      });
+    }
   }
 
   if (video.publicationDate && isNaN(Date.parse(video.publicationDate))) {
