@@ -48,7 +48,7 @@ const outputValidation = (video: OutputVideoUpdatedType) => {
   }
 
   if (video.minAgeRestriction){
-    if (video.minAgeRestriction !== null && typeof video.minAgeRestriction !== 'number' && (video.minAgeRestriction < 1 || video.minAgeRestriction > 18)) {
+    if (video.minAgeRestriction !== null && typeof video.minAgeRestriction !== 'number' || video.minAgeRestriction > 18) {
       errors.errorsMessages.push({
         message: 'MinAgeRestriction must be a number or null',
         field: 'minAgeRestriction'
