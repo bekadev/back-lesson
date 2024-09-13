@@ -107,14 +107,14 @@ const videoController = {
           .send({ errorsMessages: [{ message: 'string', field: "title" }] })
         return
       }
-      // const errors = inputValidation(req.body)
-      // if (errors.errorsMessages.length) { // если есть ошибки - отправляем ошибки
-      //   res
-      //     .status(400)
-      //     .json(errors)
-      //   return
-      //   // return res.status(400).json(errors)
-      // }
+      const errors = inputValidation(req.body)
+      if (errors.errorsMessages.length) { // если есть ошибки - отправляем ошибки
+        res
+          .status(400)
+          .json(errors)
+        return
+        // return res.status(400).json(errors)
+      }
       const createdAt = new Date().toISOString()
       // если всё ок - добавляем видео
       const newVideo: OutputVideoType /*VideoDBType*/ = {
