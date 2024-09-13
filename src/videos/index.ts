@@ -105,6 +105,7 @@ const videoController = {
         res
           .status(400)
           .send({ errorsMessages: [{ message: 'string', field: "title" }] })
+        return
       }
       // const errors = inputValidation(req.body)
       // if (errors.errorsMessages.length) { // если есть ошибки - отправляем ошибки
