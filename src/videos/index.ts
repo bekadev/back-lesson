@@ -80,6 +80,9 @@ const inputValidation = (video: InputVideoType) => {
         message: 'error!!!!', field: 'availableResolution'
       })
   }
+    if (!video.title || typeof video.title !== 'string' || !video.title.trim() || video.title.length > 41){
+      errors.errorsMessages.push({ message: 'string', field: "title" })
+    }
   return errors
 }
 
@@ -100,13 +103,13 @@ const videoController = {
       }
     },
     createVideo: (req: Request<any, any, InputVideoType>, res: Response<any /*OutputVideoType*/ | OutputErrorsType>) => {
-      let title = req.body.title
-      if (!title || typeof title !== 'string' || !title.trim() || title.length < 41) {
-        res
-          .status(400)
-          .send({ errorsMessages: [{ message: 'string', field: "title" }] })
-        return
-      }
+      // let title = req.body.title
+      // if (!title || typeof title !== 'string' || !title.trim() || title.length < 41) {
+      //   res
+      //     .status(400)
+      //     .send({ errorsMessages: [{ message: 'string', field: "title" }] })
+      //   return
+      // }
       const errors = inputValidation(req.body)
       if (errors.errorsMessages.length) { // если есть ошибки - отправляем ошибки
         res
