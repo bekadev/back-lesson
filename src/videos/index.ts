@@ -10,13 +10,6 @@ const outputValidation = (video: OutputVideoUpdatedType) => {
     errorsMessages: []
   }
 
-  // if (typeof video.title === null && typeof video.title !== 'string' ) {
-  //   errors.errorsMessages.push({
-  //     message: 'Title must be a non-empty string',
-  //     field: 'title'
-  //   });
-  // }
-
   if (!video.title || typeof video.title !== 'string' || !video.title.trim() || video.title.length >= 41){
     errors.errorsMessages.push({ message: 'string', field: "title" })
   }
@@ -41,7 +34,6 @@ const outputValidation = (video: OutputVideoUpdatedType) => {
     });
   }
 
-
   if (typeof video.canBeDownloaded !== 'boolean') {
     errors.errorsMessages.push({
       message: 'CanBeDownloaded must be a boolean',
@@ -58,12 +50,14 @@ const outputValidation = (video: OutputVideoUpdatedType) => {
     }
   }
 
-  if (video.publicationDate !== 'string' || video.publicationDate && isNaN(Date.parse(video.publicationDate))) {
+  if ( video.publicationDate && isNaN(Date.parse(video.publicationDate))) {
     errors.errorsMessages.push({
       message: 'PublicationDate must be a valid ISO date string',
       field: 'publicationDate'
     });
   }
+
+  // video.publicationDate !== 'string' ||
 
   return errors
 
