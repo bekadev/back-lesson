@@ -17,7 +17,7 @@ const outputValidation = (video: OutputVideoUpdatedType) => {
     });
   }
 
-  if (typeof video.author !== 'string' || !video.author.trim()) {
+  if (typeof video.author !== 'string' || !video.author.trim() || video.author.length >= 20) {
     errors.errorsMessages.push({
       message: 'Author must be a non-empty string',
       field: 'author'
@@ -56,11 +56,7 @@ const outputValidation = (video: OutputVideoUpdatedType) => {
     }
   }
 
-  // if (video.author.length >= 20){
-  //   errors.errorsMessages.push({ message: 'string', field: "author" })
-  // }
-
-  if (video.publicationDate && isNaN(Date.parse(video.publicationDate)) ) {
+  if (video.publicationDate && isNaN(Date.parse(video.publicationDate)) || video.publicationDate !== 'string') {
     errors.errorsMessages.push({
       message: 'PublicationDate must be a valid ISO date string',
       field: 'publicationDate'
