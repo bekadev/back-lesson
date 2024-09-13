@@ -36,6 +36,10 @@ const outputValidation = (video: OutputVideoUpdatedType) => {
     });
   }
 
+  if (!video.title || typeof video.title !== 'string' || !video.title.trim() || video.title.length >= 41){
+    errors.errorsMessages.push({ message: 'string', field: "title" })
+  }
+
   if (typeof video.canBeDownloaded !== 'boolean') {
     errors.errorsMessages.push({
       message: 'CanBeDownloaded must be a boolean',
