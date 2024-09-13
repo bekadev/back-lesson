@@ -83,6 +83,10 @@ const inputValidation = (video: InputVideoType) => {
     if (!video.title || typeof video.title !== 'string' || !video.title.trim() || video.title.length >= 41){
       errors.errorsMessages.push({ message: 'string', field: "title" })
     }
+
+  if (video.author.length >= 20){
+    errors.errorsMessages.push({ message: 'string', field: "author" })
+  }
   return errors
 }
 
