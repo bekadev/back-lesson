@@ -56,11 +56,15 @@ const outputValidation = (video: OutputVideoUpdatedType) => {
     }
   }
 
-  if (video.publicationDate && isNaN(Date.parse(video.publicationDate))) {
+  if (video.publicationDate && isNaN(Date.parse(video.publicationDate)) || video.publicationDate !== 'string') {
     errors.errorsMessages.push({
       message: 'PublicationDate must be a valid ISO date string',
       field: 'publicationDate'
     });
+  }
+
+  if (video.author.length >= 20){
+    errors.errorsMessages.push({ message: 'string', field: "author" })
   }
 
   return errors
