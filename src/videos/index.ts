@@ -80,7 +80,7 @@ const inputValidation = (video: InputVideoType) => {
         message: 'error!!!!', field: 'availableResolution'
       })
   }
-    if (!video.title || typeof video.title !== 'string' || !video.title.trim() || video.title.length > 41){
+    if (!video.title || typeof video.title !== 'string' || !video.title.trim() || video.title.length >= 41){
       errors.errorsMessages.push({ message: 'string', field: "title" })
     }
   return errors
