@@ -10,7 +10,7 @@ const outputValidation = (video: OutputVideoUpdatedType) => {
     errorsMessages: []
   }
 
-  if (typeof video.title !== 'string' || typeof video.title === null) {
+  if (typeof video.title === null && typeof video.title !== 'string' ) {
     errors.errorsMessages.push({
       message: 'Title must be a non-empty string',
       field: 'title'
@@ -100,14 +100,20 @@ const videoController = {
       }
     },
     createVideo: (req: Request<any, any, InputVideoType>, res: Response<any /*OutputVideoType*/ | OutputErrorsType>) => {
-      const errors = inputValidation(req.body)
-      if (errors.errorsMessages.length) { // если есть ошибки - отправляем ошибки
+      let title = req.body.title
+      if (!title || typeof title !== 'string' || !title.trim()) {
         res
           .status(400)
-          .json(errors)
-        return
-        // return res.status(400).json(errors)
+          .send({ errorsMessages: [{ message: 'string', field: "title" }] })
       }
+      // const errors = inputValidation(req.body)
+      // if (errors.errorsMessages.length) { // если есть ошибки - отправляем ошибки
+      //   res
+      //     .status(400)
+      //     .json(errors)
+      //   return
+      //   // return res.status(400).json(errors)
+      // }
       const createdAt = new Date().toISOString()
       // если всё ок - добавляем видео
       const newVideo: OutputVideoType /*VideoDBType*/ = {
