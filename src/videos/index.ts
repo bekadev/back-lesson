@@ -101,7 +101,7 @@ const videoController = {
     },
     createVideo: (req: Request<any, any, InputVideoType>, res: Response<any /*OutputVideoType*/ | OutputErrorsType>) => {
       let title = req.body.title
-      if (!title || typeof title !== 'string' || !title.trim()) {
+      if (!title || typeof title !== 'string' || !title.trim() || title.length < 41) {
         res
           .status(400)
           .send({ errorsMessages: [{ message: 'string', field: "title" }] })
