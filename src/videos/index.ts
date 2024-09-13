@@ -70,14 +70,14 @@ const inputValidation = (video: InputVideoType) => {
   if (!Array.isArray(video.availableResolutions)) {
     console.log('1')
     errors.errorsMessages.push({
-      message: 'error!!!!', field: 'availableResolution'
+      message: 'error!!!!', field: 'availableResolutions'
     })
   }
   console.log(video)
     if (video.availableResolutions.find(p => !Resolutions[p]))  {
       console.log('2')
       errors.errorsMessages.push({
-        message: 'error!!!!', field: 'availableResolution'
+        message: 'error!!!!', field: 'availableResolutions'
       })
   }
     if (!video.title || typeof video.title !== 'string' || !video.title.trim() || video.title.length >= 41){
