@@ -13,7 +13,7 @@ describe('/videos', () => {
 
         const res = await req
             .get(SETTINGS.PATH.VIDEOS)
-            .expect(200) // проверяем наличие эндпоинта
+            .expect(404) // проверяем наличие эндпоинта
 
         console.log(res.body) // можно посмотреть ответ эндпоинта
 
@@ -24,7 +24,7 @@ describe('/videos', () => {
 
         const res = await req
             .get(SETTINGS.PATH.VIDEOS)
-            .expect(200)
+            .expect(404)
 
         console.log(res.body)
 

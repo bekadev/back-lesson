@@ -2,7 +2,7 @@ import express from 'express'
 import cors from 'cors'
 import {SETTINGS} from './settings'
 import {videosRouter} from './videos'
-import {someRouter} from "./videos/some";
+import {allDataRouter} from "./all-data";
 
 export const app = express() // создать приложение
 app.use(express.json()) // создание свойств-объектов body во всех реквестах
@@ -14,4 +14,4 @@ app.get('/', (req, res) => {
 })
 // app.get(SETTINGS.PATH.VIDEOS, getVideosController)
 app.use(SETTINGS.PATH.VIDEOS, videosRouter)
-app.use(SETTINGS.PATH.SOME, someRouter)
+app.use(SETTINGS.PATH.SOME, allDataRouter)
