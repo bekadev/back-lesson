@@ -1,15 +1,16 @@
 import {Request, Response, Router} from 'express'
-import {InputVideoType, OutputVideoUpdatedType} from "../input-output-types/video-types";
-import {OutputErrorsType} from "../input-output-types/output-errors-type";
-import {videosRepo} from "../videos/repo";
-import {InputValidationMiddleware} from "../middleware/input-validation-middleware";
+import {InputVideoType, OutputVideoUpdatedType} from "../../input-output-types/video-types";
+import {OutputErrorsType} from "../../input-output-types/output-errors-type";
+import {videosRepo} from "../../features/videos/repo";
+import {InputValidationMiddleware} from "../../middleware/input-validation-middleware";
 import {
   videoAuthorValidator,
   videoAvailableResolutionsValidator,
   videoCanBeDownloadedValidator,
   videoMinAgeRestrictionValidator, videoPublicationDateValidator,
   videoTitleValidator
-} from "../validations/express-validator/field-validator";
+} from "../../validations/express-validator/field-validator";
+import {adminMiddleware} from "../../middleware/auth-middleware";
 export const videosRouter = Router()
 
 const videoController = {
@@ -67,6 +68,7 @@ videosRouter.post('/',
   videoAuthorValidator,
   videoTitleValidator,
   videoAvailableResolutionsValidator,
+  adminMiddleware,
   videoController.createVideo
 )
 videosRouter.get('/:id', videoController.findVideo)

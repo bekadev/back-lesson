@@ -1,5 +1,5 @@
-import {db} from "../db/db";
-import {InputVideoType, OutputVideoType, OutputVideoUpdatedType} from "../input-output-types/video-types";
+import {db} from "../../db/db";
+import {InputVideoType, OutputVideoType, OutputVideoUpdatedType} from "../../input-output-types/video-types";
 import dateFns from "date-fns";
 
 export const videosRepo  = {

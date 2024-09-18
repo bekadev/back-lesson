@@ -1,7 +1,7 @@
 import express from 'express'
 import cors from 'cors'
 import {SETTINGS} from './settings'
-import {videosRouter} from './videos'
+import {videosRouter} from './features/videos'
 import {allDataRouter} from "./all-data";
 
 export const app = express() // создать приложение
