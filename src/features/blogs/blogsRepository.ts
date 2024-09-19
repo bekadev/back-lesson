@@ -22,7 +22,7 @@ export const blogsRepository = {
         return this.map(blog)
     },
     getAll() {
-
+        return db.blogs
     },
     del(id: string) {
 

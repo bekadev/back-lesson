@@ -10,7 +10,12 @@ export type DBType = { // типизация базы данных (что мы 
 
 export const db: DBType = { // создаём базу данных (пока это просто переменная)
     videos: [],
-    blogs: [],
+    blogs: [{
+      name: 'Beka',
+      description: 'me 23',
+      id: '1',
+      websiteUrl: 'http://some.com',
+    }],
     posts: [],
     // some: []
 }
