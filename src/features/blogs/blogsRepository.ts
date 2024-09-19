@@ -25,7 +25,13 @@ export const blogsRepository = {
         return db.blogs
     },
     del(id: string) {
-
+      for (let i = 0; i < db.blogs.length; i++) {
+        if (db.blogs[i].id === id) {
+          db.blogs.splice(i, 1)
+          return true
+        }
+      }
+      return  false
     },
     put(blog: BlogInputModel, id: string) {
 
