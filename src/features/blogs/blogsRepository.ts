@@ -34,7 +34,17 @@ export const blogsRepository = {
       return  false
     },
     put(blog: BlogInputModel, id: string) {
+      const newBlogs = db.blogs.find(p => p.id === id)
 
+      if (newBlogs) {
+        newBlogs.name = blog.name
+        newBlogs.description = blog.description
+        newBlogs.websiteUrl = blog.websiteUrl
+
+        return newBlogs
+      } else {
+        return {}
+      }
     },
     map(blog: BlogDbType) {
         const blogForOutput: BlogViewModel = {
