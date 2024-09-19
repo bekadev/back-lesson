@@ -4,6 +4,7 @@ import {SETTINGS} from './settings'
 import {videosRouter} from './features/videos'
 import {allDataRouter} from "./all-data";
 import {blogsRouter} from "./features/blogs";
+import {postsRouter} from "./features/posts";
 
 export const app = express() // создать приложение
 app.use(express.json()) // создание свойств-объектов body во всех реквестах
@@ -16,4 +17,5 @@ app.get('/', (req, res) => {
 // app.get(SETTINGS.PATH.VIDEOS, getVideosController)
 app.use(SETTINGS.PATH.VIDEOS, videosRouter)
 app.use(SETTINGS.PATH.BLOGS, blogsRouter)
+app.use(SETTINGS.PATH.POSTS, postsRouter)
 app.use(SETTINGS.PATH.SOME, allDataRouter)

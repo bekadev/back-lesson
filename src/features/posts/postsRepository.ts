@@ -27,7 +27,13 @@ export const postsRepository = {
         return db.posts.map(p => this.map(p))
     },
     del(id: string) {
-
+      for (let i = 0; i < db.posts.length; i++) {
+        if (db.posts[i].id === id) {
+          db.posts.splice(i, 1)
+          return true
+        }
+      }
+      return  false
     },
     put(post: PostInputModel, id: string) {
         const blog = blogsRepository.find(post.blogId)!
