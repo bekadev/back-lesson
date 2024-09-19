@@ -22,7 +22,7 @@ export const blogsRepository = {
         return this.map(blog)
     },
     getAll() {
-        return db.blogs
+        return db.blogs.map(p => this.map(p))
     },
     del(id: string) {
       for (let i = 0; i < db.blogs.length; i++) {
@@ -42,9 +42,9 @@ export const blogsRepository = {
         newBlogs.websiteUrl = blog.websiteUrl
 
         return newBlogs
-      } else {
-        return {}
       }
+
+      return null
     },
     map(blog: BlogDbType) {
         const blogForOutput: BlogViewModel = {

@@ -7,7 +7,7 @@ export const putBlogController = (req: Request<{id: string}, any, BlogInputModel
 
   if (blogs) {
     res
-      .status(204)
+      .sendStatus(204)
       .send(blogs)
   } else {
     res.sendStatus(404)

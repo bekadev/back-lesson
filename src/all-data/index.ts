@@ -5,7 +5,6 @@ export const allDataRouter = Router()
 
 export const allDataController = {
   deleteAllData: (req: Request, res: Response) => {
-    db.videos = []
     db.blogs = []
     db.posts = []
     res
