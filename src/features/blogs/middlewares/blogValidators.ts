@@ -1,7 +1,7 @@
 import {body, param} from 'express-validator'
 import {NextFunction, Request, Response} from 'express'
 import {adminMiddleware} from "../../../middleware/auth-middleware";
-import {InputValidationMiddleware} from "../../../middleware/input-validation-middleware";
+import {inputCheckErrorsMiddleware} from "../../..//middleware/input-check-errors-middleware";
 
 // name: string // max 15
 // description: string // max 500
@@ -18,7 +18,7 @@ export const findBlogValidator = (req: Request<{id: string}>, res: Response, nex
     const id = req.params.id
 
   if (id){
-    param('id').isString().trim().withMessage('not string')
+    param('id').isString().trim().withMessage({errorsMessages: { message: 'Error id', field: "id" }})
     next()
   } else {
     res.sendStatus(404)
@@ -33,5 +33,5 @@ export const blogValidators = [
     descriptionValidator,
     websiteUrlValidator,
 
-  InputValidationMiddleware,
+  inputCheckErrorsMiddleware,
 ]
