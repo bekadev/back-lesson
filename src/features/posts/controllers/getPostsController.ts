@@ -11,6 +11,6 @@ export const getPostsController = (req: Request, res: Response<PostViewModel[]>)
       .status(200)
       .json(post)
   } else {
-    res.sendStatus(404)
+    res.json([]).status(200)
   }
 }

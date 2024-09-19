@@ -9,6 +9,6 @@ export const getBlogsController = (req: Request, res: Response<BlogViewModel[]>)
       .status(200)
       .json(blogs)
   } else {
-    res.sendStatus(404)
+    res.sendStatus(200).json([])
   }
 }
