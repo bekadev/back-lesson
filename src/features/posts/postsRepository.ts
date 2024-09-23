@@ -36,8 +36,18 @@ export const postsRepository = {
       return  false
     },
     put(post: PostInputModel, id: string) {
-        const blog = blogsRepository.find(post.blogId)!
-        db.posts = db.posts.map(p => p.id === id ? {...p, ...post, blogName: blog.name} : p)
+      const blog = blogsRepository.find(post.blogId);
+      if (!blog) return;
+
+       const postFind = db.posts.find(p => p.id === id)
+      if (!postFind) return;
+
+      postFind.title = post.title
+      postFind.shortDescription = post.shortDescription
+      postFind.blogId = blog.id
+      postFind.content = post.content
+
+      return postFind
     },
     map(post: PostDbType) {
         const postForOutput: PostViewModel = {
