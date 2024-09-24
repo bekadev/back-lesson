@@ -5,13 +5,14 @@ import {findPostController} from '../posts/controllers/findPostController'
 import {delPostController} from '../posts/controllers/delPostController'
 import {putPostController} from '../posts/controllers/putPostController'
 import {postValidators} from '../posts/middlewares/postValidators'
+import {adminMiddleware} from "../../middleware/auth-middleware";
 
 export const postsRouter = Router()
 
 postsRouter.post('/', ...postValidators, createPostController)
 postsRouter.get('/', getPostsController)
 postsRouter.get('/:id', findPostController)
-postsRouter.delete('/:id', delPostController)
-postsRouter.put('/:id', putPostController)
+postsRouter.delete('/:id', adminMiddleware, delPostController)
+postsRouter.put('/:id', adminMiddleware, putPostController)
 
 // не забудьте добавить роут в апп
