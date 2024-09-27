@@ -19,7 +19,6 @@ postsRouter.post('/', ...postValidators, createPostController)
 postsRouter.get('/', getPostsController)
 postsRouter.get('/:id', findPostController)
 postsRouter.delete('/:id', adminMiddleware, delPostController)
-postsRouter.put('/:id', titleValidator,
-  shortDescriptionValidator, contentValidator, inputCheckErrorsMiddleware, adminMiddleware, putPostController)
+postsRouter.put('/:id', ...postValidators, putPostController)
 
 // не забудьте добавить роут в апп
