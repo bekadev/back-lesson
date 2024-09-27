@@ -1,12 +1,13 @@
 import {BlogInputModel, BlogViewModel} from "../../input-output-types/blogs-types";
 import {BlogDbType} from "../../db/blog-db-type";
 import {db} from "../../db/db";
+import {randomUUID} from "node:crypto";
 
 
 export const blogsRepository = {
     create(blog: BlogInputModel) {
         const newBlog: BlogDbType = {
-            id: new Date().toISOString() + Math.random(),
+            id: randomUUID(),
             name: blog.name,
             description: blog.description,
             websiteUrl: blog.websiteUrl,
