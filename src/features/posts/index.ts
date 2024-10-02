@@ -1,24 +1,14 @@
 import {Router} from 'express'
-import {createPostController} from '../posts/controllers/createPostController'
-import {getPostsController} from '../posts/controllers/getPostsController'
-import {findPostController} from '../posts/controllers/findPostController'
-import {delPostController} from '../posts/controllers/delPostController'
-import {putPostController} from '../posts/controllers/putPostController'
 import {
-  contentValidator,
   postValidators,
-  shortDescriptionValidator,
-  titleValidator
 } from '../posts/middlewares/postValidators'
 import {adminMiddleware} from "../../middleware/auth-middleware";
-import {inputCheckErrorsMiddleware} from "../../middleware/input-check-errors-middleware";
+import {postControllers} from "../../features/posts/controllers";
 
 export const postsRouter = Router()
 
-postsRouter.post('/', ...postValidators, createPostController)
-postsRouter.get('/', getPostsController)
-postsRouter.get('/:id', findPostController)
-postsRouter.delete('/:id', adminMiddleware, delPostController)
-postsRouter.put('/:id', ...postValidators, putPostController)
-
-// не забудьте добавить роут в апп
+postsRouter.post('/', ...postValidators, postControllers.createPostController)
+postsRouter.get('/', postControllers.getPostsController)
+postsRouter.get('/:id', postControllers.findPostController)
+postsRouter.delete('/:id', adminMiddleware, postControllers.delPostController)
+postsRouter.put('/:id', ...postValidators, postControllers.putPostController)
