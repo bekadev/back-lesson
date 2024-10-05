@@ -3,16 +3,16 @@ import {PostInputModel, PostViewModel} from "../../../input-output-types/posts-t
 import {postsRepository} from "../../../features/posts/postsRepository";
 
 export  const postControllers = {
-	createPostController: (req: Request<any, any, PostInputModel>, res: Response<PostViewModel>) => {
-		const newPostId = postsRepository.create(req.body)
-		const newPost = postsRepository.findAndMap(newPostId)
+	createPostController: async (req: Request<any, any, PostInputModel>, res: Response<PostViewModel>) => {
+		const newPostId = await postsRepository.create(req.body)
+		const newPost = await postsRepository.findAndMap(newPostId)
 
 		res
 		.status(201)
 		.json(newPost)
 	},
-	delPostController: (req: Request<{id: string}>, res: Response) => {
-		const isDeleted = postsRepository.del(req.params.id)
+	delPostController: async (req: Request<{id: string}>, res: Response) => {
+		const isDeleted = await postsRepository.del(req.params.id)
 
 		if (isDeleted) {
 			res.sendStatus(204)
@@ -20,8 +20,8 @@ export  const postControllers = {
 			res.sendStatus(404)
 		}
 	},
-	findPostController: (req: Request<{id: string}>, res: Response<PostViewModel | {}>) => {
-		const blogs = postsRepository.find(req.params.id)
+	findPostController: async (req: Request<{id: string}>, res: Response<PostViewModel | {}>) => {
+		const blogs = await postsRepository.find(req.params.id)
 		console.log(blogs)
 		if (blogs){
 			res.send(blogs)
@@ -29,8 +29,8 @@ export  const postControllers = {
 			res.sendStatus(404)
 		}
 	},
-	getPostsController: (req: Request, res: Response<PostViewModel[]>) => {
-		const post = postsRepository.getAll()
+	getPostsController: async (req: Request, res: Response<PostViewModel[]>) => {
+		const post = await postsRepository.getAll()
 
 		if (post.length){
 			res
@@ -40,7 +40,7 @@ export  const postControllers = {
 			res.json([]).status(200)
 		}
 	},
-	putPostController: (req: Request<{id: string}, any, PostInputModel>, res: Response) => {
+	putPostController: async (req: Request<{id: string}, any, PostInputModel>, res: Response) => {
 		const post =  postsRepository.put(req.body, req.params.id, )
 
 		if (post) {

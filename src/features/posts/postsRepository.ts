@@ -4,29 +4,32 @@ import {PostDbType} from "../../db/post-db-type";
 import {db} from "../../db/db";
 
 export const postsRepository = {
-    create(post: PostInputModel) {
+    async create(post: PostInputModel): Promise<string> {
+			const blogName = await blogsRepository.find(post.blogId)
         const newPost: PostDbType = {
             id: new Date().toISOString() + Math.random(),
             title: post.title,
             content: post.content,
             shortDescription: post.shortDescription,
             blogId: post.blogId,
-            blogName: blogsRepository.find(post.blogId)!.name,
+            blogName: blogName!.name,
         }
         db.posts = [...db.posts, newPost]
         return newPost.id
     },
-    find(id: string) {
+    async find(id: string): Promise<PostDbType | undefined> {
         return db.posts.find(p => p.id === id)
     },
-    findAndMap(id: string) {
-        const post = this.find(id)! // ! используем этот метод если проверили существование
+    async findAndMap(id: string): Promise<PostViewModel | undefined> {
+        const post = await this.find(id)! // ! используем этот метод если проверили существование
+	    if (!post) return undefined
+
         return this.map(post)
     },
-    getAll() {
+    async getAll(): Promise<PostViewModel[]> {
         return db.posts.map(p => this.map(p))
     },
-    del(id: string) {
+	async del(id: string): Promise<boolean> {
       for (let i = 0; i < db.posts.length; i++) {
         if (db.posts[i].id === id) {
           db.posts.splice(i, 1)
@@ -35,8 +38,8 @@ export const postsRepository = {
       }
       return  false
     },
-    put(post: PostInputModel, id: string) {
-      const blog = blogsRepository.find(post.blogId);
+	async put(post: PostInputModel, id: string): Promise<PostDbType | undefined> {
+      const blog = await blogsRepository.find(post.blogId);
       if (!blog) return;
 
        const postFind = db.posts.find(p => p.id === id)

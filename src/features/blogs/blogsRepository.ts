@@ -5,7 +5,7 @@ import {randomUUID} from "node:crypto";
 
 
 export const blogsRepository = {
-    create(blog: BlogInputModel) {
+    async create(blog: BlogInputModel): Promise<string> {
         const newBlog: BlogDbType = {
             id: randomUUID(),
             name: blog.name,
@@ -15,17 +15,19 @@ export const blogsRepository = {
         db.blogs = [...db.blogs, newBlog]
         return newBlog.id
     },
-    find(id: string) {
+    async find(id: string): Promise<BlogDbType | undefined> {
         return db.blogs.find(b => b.id === id)
     },
-    findAndMap(id: string) {
-        const blog = this.find(id)! // ! используем этот метод если проверили существование
-        return this.map(blog)
+    async findAndMap(id: string): Promise<BlogViewModel | undefined> {
+        const blog = await this.find(id)! // ! используем этот метод если проверили существование
+	    if (!blog) return undefined
+	    
+	    return this.map(blog)
     },
-    getAll() {
+    async getAll(): Promise<BlogViewModel[]> {
         return db.blogs.map(p => this.map(p))
     },
-    del(id: string) {
+    async del(id: string): Promise<boolean> {
       for (let i = 0; i < db.blogs.length; i++) {
         if (db.blogs[i].id === id) {
           db.blogs.splice(i, 1)
@@ -34,7 +36,7 @@ export const blogsRepository = {
       }
       return  false
     },
-    put(blog: BlogInputModel, id: string) {
+    async put(blog: BlogInputModel, id: string): Promise<BlogDbType | null> {
       const newBlogs = db.blogs.find(p => p.id === id)
 
       if (newBlogs) {

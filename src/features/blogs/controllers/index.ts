@@ -3,16 +3,16 @@ import {BlogInputModel, BlogViewModel} from "../../../input-output-types/blogs-t
 import {blogsRepository} from "../../../features/blogs/blogsRepository";
 
 export const blogControllers = {
-	createBlogController: (req: Request<any, any, BlogInputModel>, res: Response<BlogViewModel>) => {
-		const newBlogId = blogsRepository.create(req.body)
-		const newBlog = blogsRepository.findAndMap(newBlogId)
+	createBlogController: async (req: Request<any, any, BlogInputModel>, res: Response<BlogViewModel>) => {
+		const newBlogId = await blogsRepository.create(req.body)
+		const newBlog = await blogsRepository.findAndMap(newBlogId)
 
 		res
 		.status(201)
 		.json(newBlog)
 	},
-	findBlogController: (req: Request<{id: string}>, res: Response<BlogViewModel | {}>) => {
-		const blogs = blogsRepository.find(req.params.id)
+	findBlogController:  async (req: Request<{id: string}>, res: Response<BlogViewModel | {}>) => {
+		const blogs = await blogsRepository.find(req.params.id)
 		console.log(blogs)
 		if (blogs){
 			res.send(blogs)
@@ -20,8 +20,8 @@ export const blogControllers = {
 			res.sendStatus(404)
 		}
 	},
-	delBlogController: (req: Request<{id: string}>, res: Response) => {
-		const isDeleted = blogsRepository.del(req.params.id)
+	delBlogController: async (req: Request<{id: string}>, res: Response) => {
+		const isDeleted = await blogsRepository.del(req.params.id)
 
 		if (isDeleted) {
 			res.sendStatus(204)
@@ -29,8 +29,8 @@ export const blogControllers = {
 			res.sendStatus(404)
 		}
 	},
-	getBlogsController: (req: Request, res: Response<BlogViewModel[]>) => {
-		const blogs = blogsRepository.getAll()
+	getBlogsController: async (req: Request, res: Response<BlogViewModel[]>) => {
+		const blogs = await blogsRepository.getAll()
 
 		if (blogs.length){
 			res
@@ -42,8 +42,8 @@ export const blogControllers = {
 			.json([])
 		}
 	},
-	putBlogController: (req: Request<{id: string}, any, BlogInputModel>, res: Response) => {
-		const blogs =  blogsRepository.put(req.body, req.params.id, )
+	putBlogController: async (req: Request<{id: string}, any, BlogInputModel>, res: Response) => {
+		const blogs = await  blogsRepository.put(req.body, req.params.id, )
 
 		if (blogs) {
 			res
