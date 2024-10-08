@@ -1,7 +1,7 @@
 import {blogsRepository} from '../../features/blogs/blogsRepository'
 import {PostInputModel, PostViewModel} from "../../input-output-types/posts-types";
 import {PostDbType} from "../../db/post-db-type";
-import {db} from "../../db/db";
+import {postCollection} from "../../db/mongo-db";
 
 export const postsRepository = {
     async create(post: PostInputModel): Promise<string> {
@@ -14,11 +14,11 @@ export const postsRepository = {
             blogId: post.blogId,
             blogName: blogName!.name,
         }
-        db.posts = [...db.posts, newPost]
+	      await postCollection.insertOne(newPost)
         return newPost.id
     },
-    async find(id: string): Promise<PostDbType | undefined> {
-        return db.posts.find(p => p.id === id)
+    async find(id: string): Promise<PostDbType | null> {
+	    return await postCollection.findOne({id: id})
     },
     async findAndMap(id: string): Promise<PostViewModel | undefined> {
         const post = await this.find(id)! // ! используем этот метод если проверили существование
@@ -27,28 +27,25 @@ export const postsRepository = {
         return this.map(post)
     },
     async getAll(): Promise<PostViewModel[]> {
-        return db.posts.map(p => this.map(p))
+	    const posts = await postCollection.find().toArray();
+	    return posts.map(p => this.map(p));
     },
 	async del(id: string): Promise<boolean> {
-      for (let i = 0; i < db.posts.length; i++) {
-        if (db.posts[i].id === id) {
-          db.posts.splice(i, 1)
-          return true
-        }
-      }
-      return  false
+      const result = await postCollection.deleteOne({id: id})
+			return result.deletedCount == 1
     },
 	async put(post: PostInputModel, id: string): Promise<PostDbType | undefined> {
       const blog = await blogsRepository.find(post.blogId);
       if (!blog) return;
 
-       const postFind = db.posts.find(p => p.id === id)
+       const postFind = await this.find(id)
       if (!postFind) return;
 
       postFind.title = post.title
       postFind.shortDescription = post.shortDescription
       postFind.blogId = blog.id
       postFind.content = post.content
+			await postCollection.updateOne({id: id}, {$set: postFind})
 
       return postFind
     },

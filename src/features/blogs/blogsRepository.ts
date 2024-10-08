@@ -2,6 +2,7 @@ import {BlogInputModel, BlogViewModel} from "../../input-output-types/blogs-type
 import {BlogDbType} from "../../db/blog-db-type";
 import {db} from "../../db/db";
 import {randomUUID} from "node:crypto";
+import {blogCollection, postCollection} from "../../db/mongo-db";
 
 
 export const blogsRepository = {
@@ -12,11 +13,11 @@ export const blogsRepository = {
             description: blog.description,
             websiteUrl: blog.websiteUrl,
         }
-        db.blogs = [...db.blogs, newBlog]
+				await blogCollection.insertOne(newBlog);
         return newBlog.id
     },
-    async find(id: string): Promise<BlogDbType | undefined> {
-        return db.blogs.find(b => b.id === id)
+    async find(id: string): Promise<BlogDbType | null> {
+	    return await blogCollection.findOne({id: id})
     },
     async findAndMap(id: string): Promise<BlogViewModel | undefined> {
         const blog = await this.find(id)! // ! используем этот метод если проверили существование
@@ -25,29 +26,23 @@ export const blogsRepository = {
 	    return this.map(blog)
     },
     async getAll(): Promise<BlogViewModel[]> {
-        return db.blogs.map(p => this.map(p))
+	    const posts = await blogCollection.find().toArray();
+	    return posts.map(p => this.map(p));
     },
     async del(id: string): Promise<boolean> {
-      for (let i = 0; i < db.blogs.length; i++) {
-        if (db.blogs[i].id === id) {
-          db.blogs.splice(i, 1)
-          return true
-        }
-      }
-      return  false
+	    const result = await blogCollection.deleteOne({id: id})
+	    return result.deletedCount == 1
     },
-    async put(blog: BlogInputModel, id: string): Promise<BlogDbType | null> {
-      const newBlogs = db.blogs.find(p => p.id === id)
+    async put(blog: BlogInputModel, id: string): Promise<BlogDbType | null | undefined> {
+      const newBlogs = await this.find(id)
+	    if (!newBlogs) return;
 
-      if (newBlogs) {
         newBlogs.name = blog.name
         newBlogs.description = blog.description
         newBlogs.websiteUrl = blog.websiteUrl
 
-        return newBlogs
-      }
-
-      return null
+	    await blogCollection.updateOne({id: id}, {$set: newBlogs})
+	    return newBlogs
     },
     map(blog: BlogDbType) {
         const blogForOutput: BlogViewModel = {
