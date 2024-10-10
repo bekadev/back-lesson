@@ -1,8 +1,7 @@
 import {BlogInputModel, BlogViewModel} from "../../input-output-types/blogs-types";
 import {BlogDbType} from "../../db/blog-db-type";
-import {db} from "../../db/db";
 import {randomUUID} from "node:crypto";
-import {blogCollection, postCollection} from "../../db/mongo-db";
+import {blogCollection} from "../../db/mongo-db";
 
 
 export const blogsRepository = {
@@ -12,6 +11,9 @@ export const blogsRepository = {
             name: blog.name,
             description: blog.description,
             websiteUrl: blog.websiteUrl,
+	        createdAt: blog.name,
+	        isMembership: blog.isMembership,
+
         }
 				await blogCollection.insertOne(newBlog);
         return newBlog.id
@@ -50,6 +52,8 @@ export const blogsRepository = {
             description: blog.description,
             websiteUrl: blog.websiteUrl,
             name: blog.name,
+	        createdAt: blog.name,
+	        isMembership: blog.isMembership,
         }
         return blogForOutput
     },
