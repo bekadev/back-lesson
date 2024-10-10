@@ -18,7 +18,7 @@ export const blogsRepository = {
         return newBlog.id
     },
     async find(id: string): Promise<BlogDbType | null> {
-	    return await blogCollection.findOne({id: id})
+	    return await blogCollection.findOne({id: id}, {projection: {_id: 0}})
     },
     async findAndMap(id: string): Promise<BlogViewModel | undefined> {
         const blog = await this.find(id)! // ! используем этот метод если проверили существование
