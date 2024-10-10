@@ -3,7 +3,6 @@ import {BlogDbType} from "../../db/blog-db-type";
 import {randomUUID} from "node:crypto";
 import {blogCollection} from "../../db/mongo-db";
 
-
 export const blogsRepository = {
     async create(blog: BlogInputModel): Promise<string> {
         const newBlog: BlogDbType = {
@@ -32,6 +31,10 @@ export const blogsRepository = {
     },
     async del(id: string): Promise<boolean> {
 	    const result = await blogCollection.deleteOne({id: id})
+	    return result.deletedCount == 1
+    },
+	async delMany(): Promise<boolean> {
+	    const result = await blogCollection.deleteMany({})
 	    return result.deletedCount == 1
     },
     async put(blog: BlogInputModel, id: string): Promise<BlogDbType | null | undefined> {
