@@ -29,15 +29,15 @@ export const blogControllers = {
 			res.sendStatus(404)
 		}
 	},
-	delAllBlogController: async (req: Request, res: Response) => {
-		const isDeleted = await blogsRepository.delMany()
-
-		if (isDeleted) {
-			res.sendStatus(204)
-		} else {
-			res.sendStatus(404)
-		}
-	},
+	// delAllBlogController: async (req: Request, res: Response) => {
+	// 	const isDeleted = await blogsRepository.delMany()
+	//
+	// 	if (isDeleted) {
+	// 		res.sendStatus(204)
+	// 	} else {
+	// 		res.sendStatus(404)
+	// 	}
+	// },
 	getBlogsController: async (req: Request, res: Response<BlogViewModel[]>) => {
 		const blogs = await blogsRepository.getAll()
 
