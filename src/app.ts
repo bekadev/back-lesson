@@ -11,7 +11,7 @@ app.use(cors()) // разрешить любым фронтам делать з�
 
 app.get('/', (req, res) => {
     // эндпоинт, который будет показывать на верселе какая версия бэкэнда сейчас залита
-    res.status(200).json({version: '2.0'})
+    res.status(200).json({version: '3.0'})
 })
 // app.get(SETTINGS.PATH.VIDEOS, getVideosController)
 app.use(SETTINGS.PATH.BLOGS, blogsRouter)
