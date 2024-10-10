@@ -51,7 +51,7 @@ export const blogsRepository = {
             description: blog.description,
             websiteUrl: blog.websiteUrl,
             name: blog.name,
-	        createdAt: blog.name,
+	        createdAt: blog.createdAt,
 	        isMembership: blog.isMembership,
         }
         return blogForOutput
