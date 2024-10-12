@@ -19,7 +19,7 @@ export const postsRepository = {
 		return newPost.id
 	},
 	async find(id: string): Promise<PostDbType | null> {
-		return await postCollection.findOne({id: id})
+		return await postCollection.findOne({id: id}, {projection: {_id: 0}})
 	},
 	async findAndMap(id: string): Promise<PostViewModel | undefined> {
 		const post = await this.find(id)! // ! используем этот метод если проверили существование
