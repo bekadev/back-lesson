@@ -54,6 +54,7 @@ export const postsRepository = {
 	},
 	map(post: PostDbType) {
 		const postForOutput: PostViewModel = {
+			_id: post._id,
 			id: post.id,
 			title: post.title,
 			shortDescription: post.shortDescription,
