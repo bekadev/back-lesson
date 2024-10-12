@@ -28,13 +28,8 @@ export const postsRepository = {
 		return this.map(post)
 	},
 	async getAll(): Promise<PostViewModel[]> {
-		// const posts = await postCollection.find().toArray();
-		// return posts.map(p => this.map(p));
 		const posts = await postCollection.find().toArray();
-
-		const mappedPosts = await Promise.all(posts.map(async (p) => await this.map(p)));
-
-		return mappedPosts;
+		return posts.map(p => this.map(p));
 	},
 	async del(id: string): Promise<boolean> {
 		const result = await postCollection.deleteOne({id: id})
@@ -55,17 +50,14 @@ export const postsRepository = {
 
 		return postFind
 	},
-	async map(post: PostDbType) {
-		const blogName = await blogsRepository.find(post.blogId)
+	map(post: PostDbType) {
 		const postForOutput: PostViewModel = {
 			id: post.id,
 			title: post.title,
 			shortDescription: post.shortDescription,
 			content: post.content,
-			blogId: blogName!.id,
-			blogName: blogName!.name,
-			// blogId: post.blogId,
-			// blogName: post.blogName,
+			blogId: post.blogId,
+			blogName: post.blogName,
 			createdAt: post.createdAt,
 		}
 		return postForOutput
