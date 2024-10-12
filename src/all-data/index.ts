@@ -6,19 +6,17 @@ export const allDataRouter = Router()
 export const allDataController = {
 	deleteAllData: async (req: Request, res: Response) => {
 		try {
-			const blogResult = await blogCollection.deleteMany({});
-			const postResult = await postCollection.deleteMany({});
+			// Delete all documents from both collections
+			await blogCollection.deleteMany({});
+			await postCollection.deleteMany({});
 
-			// Проверяем количество удаленных документов, чтобы вернуть корректный статус
-			if (blogResult.deletedCount > 0 || postResult.deletedCount > 0) {
-				return res.sendStatus(204); // Данные успешно удалены
-			} else {
-				return res.status(404).json({ message: "No data to delete" }); // Нет данных для удаления
-			}
+			// Always return 204, even if there was nothing to delete
+			return res.sendStatus(204); // No content, request succeeded
 		} catch (error) {
-			return res.status(500).json({ message: "An error occurred" });
+			// Return 500 in case of error
+			return res.status(500).json({message: "An error occurred"});
 		}
 	}
 }
 
-allDataRouter.delete('/', allDataController.deleteAllData)
+allDataRouter.delete('/', allDataController.deleteAllData);
