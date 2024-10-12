@@ -1,7 +1,5 @@
-import {ObjectId} from "mongodb";
-
 export type PostDbType = {
-	_id: typeof ObjectId
+	// _id: typeof ObjectId
 	id: string
 	title: string // max 30
 	shortDescription: string // max 100

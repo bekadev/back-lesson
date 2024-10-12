@@ -2,13 +2,11 @@ import {blogsRepository} from '../../features/blogs/blogsRepository'
 import {PostInputModel, PostViewModel} from "../../input-output-types/posts-types";
 import {PostDbType} from "../../db/post-db-type";
 import {postCollection} from "../../db/mongo-db";
-import {ObjectId} from "mongodb";
 
 export const postsRepository = {
 	async create(post: PostInputModel): Promise<string> {
 		const blogName = await blogsRepository.find(post.blogId)
 		const newPost: PostDbType = {
-			_id: ObjectId,
 			id: new Date().toISOString() + Math.random(),
 			title: post.title,
 			content: post.content,
@@ -54,7 +52,6 @@ export const postsRepository = {
 	},
 	map(post: PostDbType) {
 		const postForOutput: PostViewModel = {
-			_id: post._id,
 			id: post.id,
 			title: post.title,
 			shortDescription: post.shortDescription,
