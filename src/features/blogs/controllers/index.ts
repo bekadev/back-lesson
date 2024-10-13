@@ -11,16 +11,16 @@ export const blogControllers = {
 		.status(201)
 		.json(newBlog)
 	},
-	findBlogController:  async (req: Request<{id: string}>, res: Response<BlogViewModel | {}>) => {
+	findBlogController: async (req: Request<{ id: string }>, res: Response<BlogViewModel | {}>) => {
 		const blogs = await blogsRepository.find(req.params.id)
 		console.log(blogs)
-		if (blogs){
-			res.send(blogs)
+		if (blogs) {
+			return res.send(blogs)
 		} else {
-			res.sendStatus(404)
+			return res.sendStatus(404)
 		}
 	},
-	delBlogController: async (req: Request<{id: string}>, res: Response) => {
+	delBlogController: async (req: Request<{ id: string }>, res: Response) => {
 		const isDeleted = await blogsRepository.del(req.params.id)
 
 		if (isDeleted) {
@@ -41,7 +41,7 @@ export const blogControllers = {
 	getBlogsController: async (req: Request, res: Response<BlogViewModel[]>) => {
 		const blogs = await blogsRepository.getAll()
 
-		if (blogs.length){
+		if (blogs.length) {
 			res
 			.status(200)
 			.json(blogs)
@@ -51,8 +51,8 @@ export const blogControllers = {
 			.json([])
 		}
 	},
-	putBlogController: async (req: Request<{id: string}, any, BlogInputModel>, res: Response) => {
-		const blogs = await  blogsRepository.put(req.body, req.params.id, )
+	putBlogController: async (req: Request<{ id: string }, any, BlogInputModel>, res: Response) => {
+		const blogs = await blogsRepository.put(req.body, req.params.id,)
 
 		if (blogs) {
 			res
