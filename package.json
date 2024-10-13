@@ -10,6 +10,7 @@
     "jest:coverage": "jest -i --coverage"
   },
   "dependencies": {
+    "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "date-fns": "^3.6.0",
     "dotenv": "^16.4.5",

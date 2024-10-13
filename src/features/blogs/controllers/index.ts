@@ -18,9 +18,8 @@ export const blogControllers = {
 			return res
 			.status(200)
 			.send(blogs)
-		} else {
-			return res.sendStatus(404)
 		}
+		return res.sendStatus(404)
 	},
 	delBlogController: async (req: Request<{ id: string }>, res: Response) => {
 		const isDeleted = await blogsRepository.del(req.params.id)
@@ -44,11 +43,11 @@ export const blogControllers = {
 		const blogs = await blogsRepository.getAll()
 
 		if (blogs.length) {
-			res
+			return res
 			.status(200)
 			.json(blogs)
 		} else {
-			res
+			return res
 			.status(200)
 			.json([])
 		}

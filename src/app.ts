@@ -10,8 +10,8 @@ app.use(express.json()) // создание свойств-объектов body
 app.use(cors()) // разрешить любым фронтам делать запросы на наш бэк
 
 app.get('/', (req, res) => {
-    // эндпоинт, который будет показывать на верселе какая версия бэкэнда сейчас залита
-    res.status(200).json({version: '3.0'})
+	// эндпоинт, который будет показывать на верселе какая версия бэкэнда сейчас залита
+	res.status(200).json({version: '3.0'})
 })
 // app.get(SETTINGS.PATH.VIDEOS, getVideosController)
 app.use(SETTINGS.PATH.BLOGS, blogsRouter)
