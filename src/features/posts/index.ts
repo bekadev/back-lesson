@@ -7,6 +7,6 @@ export const postsRouter = Router()
 
 postsRouter.post('/', ...postValidators, postControllers.createPostController)
 postsRouter.get('/', postControllers.getPostsController)
-postsRouter.get('/:id', adminMiddleware, postControllers.findPostController)
+postsRouter.get('/:id', postControllers.findPostController)
 postsRouter.delete('/:id', adminMiddleware, postControllers.delPostController)
 postsRouter.put('/:id', adminMiddleware, ...postValidators, postControllers.putPostController)
