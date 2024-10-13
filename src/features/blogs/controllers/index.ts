@@ -15,7 +15,9 @@ export const blogControllers = {
 		const blogs = await blogsRepository.find(req.params.id)
 		console.log(blogs)
 		if (blogs) {
-			return res.send(blogs)
+			return res
+			.status(200)
+			.send(blogs)
 		} else {
 			return res.sendStatus(404)
 		}
