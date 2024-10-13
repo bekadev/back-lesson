@@ -57,7 +57,7 @@ export const blogControllers = {
 
 		if (blogs) {
 			res
-			.sendStatus(204)
+			.status(204)
 			.send(blogs)
 		} else {
 			res.sendStatus(404)
