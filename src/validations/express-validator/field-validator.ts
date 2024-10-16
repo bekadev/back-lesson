@@ -41,6 +41,10 @@ const bekaTheBest = () => {
     console.log('bekaTheBest')
 }
 
+const bekaTheWorst = () => {
+    console.log('bekaTheWorst')
+}
 
 
-export {bekaTheBest,videoAuthorValidator, videoPublicationDateValidator, videoTitleValidator, videoAvailableResolutionsValidator, videoMinAgeRestrictionValidator, videoCanBeDownloadedValidator}
+
+export {bekaTheWorst ,bekaTheBest,videoAuthorValidator, videoPublicationDateValidator, videoTitleValidator, videoAvailableResolutionsValidator, videoMinAgeRestrictionValidator, videoCanBeDownloadedValidator}

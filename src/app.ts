@@ -4,7 +4,7 @@ import {SETTINGS} from './settings'
 import {allDataRouter} from "./all-data";
 import {blogsRouter} from "./features/blogs";
 import {postsRouter} from "./features/posts";
-import {bekaTheBest} from "./validations/express-validator/field-validator";
+import {bekaTheBest, bekaTheWorst} from "./validations/express-validator/field-validator";
 
 export const app = express() // создать приложение
 app.use(express.json()) // создание свойств-объектов body во всех реквестах
@@ -19,6 +19,12 @@ bekaTheBest()
 bekaTheBest()
 bekaTheBest()
 bekaTheBest()
+
+bekaTheWorst()
+bekaTheWorst()
+bekaTheWorst()
+bekaTheWorst()
+bekaTheWorst()
 // app.get(SETTINGS.PATH.VIDEOS, getVideosController)
 app.use(SETTINGS.PATH.BLOGS, blogsRouter)
 app.use(SETTINGS.PATH.POSTS, postsRouter)
