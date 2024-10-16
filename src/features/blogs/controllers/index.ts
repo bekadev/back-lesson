@@ -1,66 +1,50 @@
 import {Request, Response} from "express";
 import {BlogInputModel, BlogViewModel} from "../../../input-output-types/blogs-types";
-import {blogsRepository} from "../../../features/blogs/blogsRepository";
+import {blogsService} from "../service";
 
 export const blogControllers = {
 	createBlogController: async (req: Request<any, any, BlogInputModel>, res: Response<BlogViewModel>) => {
-		const newBlogId = await blogsRepository.create(req.body)
-		const newBlog = await blogsRepository.findAndMap(newBlogId)
-
-		res
-		.status(201)
-		.json(newBlog)
+		const newBlog = await blogsService.create(req.body);
+		if (newBlog) {
+			return res.status(201).json(newBlog);
+		}
+		return res.status(400)
 	},
+
 	findBlogController: async (req: Request<{ id: string }>, res: Response<BlogViewModel | {}>) => {
-		const blogs = await blogsRepository.find(req.params.id)
-		console.log(blogs)
-		if (blogs) {
-			return res
-			.status(200)
-			.send(blogs)
+		const blog = await blogsService.find(req.params.id);
+		if (blog) {
+			return res.status(200).json(blog);
 		}
-		return res.sendStatus(404)
+		return res.sendStatus(404);
 	},
+
 	delBlogController: async (req: Request<{ id: string }>, res: Response) => {
-		const isDeleted = await blogsRepository.del(req.params.id)
-
+		const isDeleted = await blogsService.del(req.params.id);
 		if (isDeleted) {
-			res.sendStatus(204)
-		} else {
-			res.sendStatus(404)
+			return res.sendStatus(204);
 		}
+		return res.sendStatus(404);
 	},
+
 	delAllBlogController: async (req: Request, res: Response) => {
-		const isDeleted = await blogsRepository.delMany()
-
+		const isDeleted = await blogsService.delMany();
 		if (isDeleted) {
-			res.sendStatus(204)
-		} else {
-			res.sendStatus(404)
+			return res.sendStatus(204);
 		}
+		return res.sendStatus(404);
 	},
+
 	getBlogsController: async (req: Request, res: Response<BlogViewModel[]>) => {
-		const blogs = await blogsRepository.getAll()
-
-		if (blogs.length) {
-			return res
-			.status(200)
-			.json(blogs)
-		} else {
-			return res
-			.status(200)
-			.json([])
-		}
+		const blogs = await blogsService.getAll();
+		return res.status(200).json(blogs);
 	},
-	putBlogController: async (req: Request<{ id: string }, any, BlogInputModel>, res: Response) => {
-		const blogs = await blogsRepository.put(req.body, req.params.id,)
 
-		if (blogs) {
-			res
-			.status(204)
-			.send(blogs)
-		} else {
-			res.sendStatus(404)
+	putBlogController: async (req: Request<{ id: string }, any, BlogInputModel>, res: Response) => {
+		const updatedBlog = await blogsService.put(req.body, req.params.id);
+		if (updatedBlog) {
+			return res.status(200).json(updatedBlog); // Send 200 and updated data back.
 		}
-	}
-}
+		return res.sendStatus(404);
+	},
+};
