@@ -37,4 +37,14 @@ const videoCanBeDownloadedValidator = body('canBeDownloaded')
   .isBoolean()
   .withMessage({ message: 'Error canBeDownloaded', field: "canBeDownloaded" })
 
-export {videoAuthorValidator, videoPublicationDateValidator, videoTitleValidator, videoAvailableResolutionsValidator, videoMinAgeRestrictionValidator, videoCanBeDownloadedValidator}
+const bekaTheBest = () => {
+    console.log('bekaTheBest')
+}
+
+const bekaTheWorst = () => {
+    console.log('bekaTheWorst')
+}
+
+
+
+export {bekaTheWorst ,bekaTheBest,videoAuthorValidator, videoPublicationDateValidator, videoTitleValidator, videoAvailableResolutionsValidator, videoMinAgeRestrictionValidator, videoCanBeDownloadedValidator}
