@@ -10,7 +10,6 @@ export const blogControllers = {
 		}
 		return res.status(400)
 	},
-
 	findBlogController: async (req: Request<{ id: string }>, res: Response<BlogViewModel | {}>) => {
 		const blog = await blogsService.find(req.params.id);
 		if (blog) {
@@ -18,7 +17,6 @@ export const blogControllers = {
 		}
 		return res.sendStatus(404);
 	},
-
 	delBlogController: async (req: Request<{ id: string }>, res: Response) => {
 		const isDeleted = await blogsService.del(req.params.id);
 		if (isDeleted) {
@@ -26,7 +24,6 @@ export const blogControllers = {
 		}
 		return res.sendStatus(404);
 	},
-
 	delAllBlogController: async (req: Request, res: Response) => {
 		const isDeleted = await blogsService.delMany();
 		if (isDeleted) {
@@ -34,12 +31,10 @@ export const blogControllers = {
 		}
 		return res.sendStatus(404);
 	},
-
 	getBlogsController: async (req: Request, res: Response<BlogViewModel[]>) => {
 		const blogs = await blogsService.getAll();
 		return res.status(200).json(blogs);
 	},
-
 	putBlogController: async (req: Request<{ id: string }, any, BlogInputModel>, res: Response) => {
 		const updatedBlog = await blogsService.put(req.body, req.params.id);
 		if (updatedBlog) {

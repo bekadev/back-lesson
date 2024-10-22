@@ -17,25 +17,20 @@ export const blogsService = {
 		const createdBlog = await this.find(newBlogId);
 		return createdBlog ? this.map(createdBlog) : null;
 	},
-
 	async find(id: string): Promise<BlogViewModel | null> {
 		const blog = await blogsRepository.find(id);
 		return blog ? this.map(blog) : null;
 	},
-
 	async getAll(): Promise<BlogViewModel[]> {
 		const blogs = await blogsRepository.getAll();
 		return blogs.map(this.map);
 	},
-
 	async del(id: string): Promise<boolean> {
 		return await blogsRepository.del(id);
 	},
-
 	async delMany(): Promise<boolean> {
 		return await blogsRepository.delMany(); // Logic inside repository to ensure multiple deletions.
 	},
-
 	async put(blog: BlogInputModel, id: string): Promise<BlogViewModel | null> {
 		const existingBlog = await this.find(id);
 		if (!existingBlog) return null;
