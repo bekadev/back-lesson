@@ -38,7 +38,7 @@ export const blogControllers = {
 	putBlogController: async (req: Request<{ id: string }, any, BlogInputModel>, res: Response) => {
 		const updatedBlog = await blogsService.put(req.body, req.params.id);
 		if (updatedBlog) {
-			return res.status(200).json(updatedBlog); // Send 200 and updated data back.
+			return res.status(204).json(updatedBlog);
 		}
 		return res.sendStatus(404);
 	},
