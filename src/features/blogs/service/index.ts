@@ -78,7 +78,7 @@ export const blogsService = {
 			blogId: blogId,
 			title: post.title,
 			content: post.content,
-			blogName: 'TEST',
+			blogName: blogExists.name,
 			shortDescription: post.shortDescription,
 			createdAt: new Date().toISOString(),
 		};

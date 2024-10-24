@@ -11,5 +11,5 @@ blogsRouter.get('/:id', findBlogValidator, blogControllers.findBlogController)
 blogsRouter.delete('/:id', adminMiddleware, findBlogValidator, blogControllers.delBlogController)
 blogsRouter.delete('/', adminMiddleware, blogControllers.delAllBlogController)
 blogsRouter.put('/:id', findBlogValidator, ...blogValidators, blogControllers.putBlogController)
-blogsRouter.post('/:id/posts', adminMiddleware, blogControllers.createPostForBlogController);
+blogsRouter.post('/:id/posts', adminMiddleware, ...blogValidators, blogControllers.createPostForBlogController);
 blogsRouter.get('/:id/posts', blogControllers.getPostsForBlogController);
