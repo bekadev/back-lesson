@@ -16,7 +16,7 @@ export type BlogViewModel = {
 }
 
 export type BlogsPaginationViewModel = {
-	pageCount: number
+	pagesCount: number
 	page: number
 	pageSize: number
 	totalCount: number

@@ -33,7 +33,6 @@ export const blogControllers = {
 		return res.sendStatus(404);
 	},
 	getBlogsController: async (req: Request, res: Response<BlogsPaginationViewModel>) => {
-
 		const {pageNumber, pageSize, searchNameTerm, sortBy, sortDirection} = paginationQueries(req)
 		const blogs = await blogsService.getAll(
 			pageNumber,
