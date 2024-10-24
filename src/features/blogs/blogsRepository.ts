@@ -11,13 +11,16 @@ export const blogsRepository = {
 		return await blogCollection.findOne({id: id}, {projection: {_id: 0}});
 	},
 	async getAll(
+		id: string,
 		pageNumber: number,
 		pageSize: number,
 		sortBy: string,
 		sortDirection: 'desc' | 'asc',
 		searchNameTerm: string | null
 	): Promise<BlogDbType[]> {
-		const filter: any = {}
+		const filter: any = {
+			id: id
+		}
 		if (searchNameTerm) {
 			filter.title = {$regex: searchNameTerm, $options: 'i'};
 		}
