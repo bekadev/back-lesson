@@ -10,8 +10,23 @@ export const postsRepository = {
 	async find(id: string): Promise<PostDbType | null> {
 		return await postCollection.findOne({id: id}, {projection: {_id: 0}})
 	},
-	async getAll(): Promise<PostViewModel[]> {
-		return await postCollection.find().toArray();
+	async getAll(
+		pageNumber: number,
+		pageSize: number,
+		sortBy: string,
+		sortDirection: 'desc' | 'asc',
+	): Promise<PostViewModel[]> {
+		return await postCollection
+		.find()
+		.skip((pageNumber - 1) * pageSize)
+		.limit(pageSize)
+		.sort({[sortBy]: sortDirection === 'asc' ? 1 : -1})
+		.toArray();
+	},
+	async getBlogsCount(): Promise<number> {
+		const filter: any = {}
+		filter.title = {$regex: '', $options: 'i'};
+		return postCollection.countDocuments(filter)
 	},
 	async del(id: string): Promise<boolean> {
 		const result = await postCollection.deleteOne({id: id})

@@ -1,5 +1,5 @@
 import {PostDbType} from "../../../db/post-db-type";
-import {PostInputModel, PostViewModel} from "../../../input-output-types/posts-types";
+import {PostInputModel, PostViewModel, type PostsPaginationViewModel} from "../../../input-output-types/posts-types";
 import {blogsRepository} from "../../blogs/blogsRepository";
 import {postsRepository} from "../postsRepository";
 
@@ -29,9 +29,26 @@ export const postsService = {
 	//
 	// 	return this.map(post)
 	// },
-	async getAll(): Promise<PostViewModel[]> {
-		const posts = await postsRepository.getAll()
-		return posts.map(p => this.map(p));
+	async getAll(
+		pageNumber: number,
+		pageSize: number,
+		sortBy: string,
+		sortDirection: 'desc' | 'asc',
+	): Promise<PostsPaginationViewModel> {
+		const posts = await postsRepository.getAll(
+			pageNumber,
+			pageSize,
+			sortBy,
+			sortDirection,
+		)
+		const postsCount = await postsRepository.getBlogsCount()
+		return {
+			pagesCount: Math.ceil(postsCount / pageSize),
+			page: pageNumber,
+			pageSize: pageSize,
+			totalCount: postsCount,
+			items: posts.map(p => this.map(p))
+		}
 	},
 	async del(id: string): Promise<boolean> {
 		return await postsRepository.del(id);

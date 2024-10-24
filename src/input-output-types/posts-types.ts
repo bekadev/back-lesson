@@ -15,3 +15,11 @@ export type PostViewModel = {
 	blogName: string
 	createdAt?: string
 }
+
+export type PostsPaginationViewModel = {
+	pagesCount: number
+	page: number
+	pageSize: number
+	totalCount: number
+	items: PostViewModel[]
+}

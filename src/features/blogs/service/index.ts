@@ -41,7 +41,7 @@ export const blogsService = {
 			page: pageNumber,
 			pageSize: pageSize,
 			totalCount: blogsCount,
-			items: blogs.map(this.map)
+			items: blogs
 		}
 	},
 	async del(id: string): Promise<boolean> {
@@ -55,7 +55,7 @@ export const blogsService = {
 		if (!existingBlog) return null;
 
 		const updatedBlog = {
-			...existingBlog, // Preserve existing values (like createdAt, isMembership)
+			...existingBlog,
 			name: blog.name,
 			description: blog.description,
 			websiteUrl: blog.websiteUrl,

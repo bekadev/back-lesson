@@ -1,4 +1,5 @@
 import {Request, Response} from "express";
+import {paginationQueries} from "../../../helpers/paginations_queries";
 import {PostInputModel, PostViewModel} from "../../../input-output-types/posts-types";
 import {postsService} from "../service";
 
@@ -25,7 +26,13 @@ export const postControllers = {
 		return res.sendStatus(404);
 	},
 	getPostsController: async (req: Request, res: Response<PostViewModel[]>) => {
-		const post = await postsService.getAll()
+		const {pageNumber, pageSize, sortBy, sortDirection} = paginationQueries(req)
+		const post = await postsService.getAll(
+			pageNumber,
+			pageSize,
+			sortBy,
+			sortDirection,
+		)
 		return res.status(200).json(post);
 	},
 	putPostController: async (req: Request<{ id: string }, any, PostInputModel>, res: Response) => {
