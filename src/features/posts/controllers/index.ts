@@ -32,7 +32,7 @@ export const postControllers = {
 		const updatedPost = await postsService.put(req.body, req.params.id,)
 
 		if (updatedPost) {
-			return res.status(200).json(updatedPost);
+			return res.status(204).json(updatedPost);
 		}
 		return res.sendStatus(404);
 	}
