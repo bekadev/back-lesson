@@ -1,5 +1,6 @@
 import {BlogDbType} from "../../db/blog-db-type";
-import {blogCollection} from "../../db/mongo-db";
+import {blogCollection, postCollection} from "../../db/mongo-db";
+import type {PostDbType} from "../../db/post-db-type";
 
 export const blogsRepository = {
 	async create(blog: BlogDbType): Promise<string> {
@@ -46,5 +47,22 @@ export const blogsRepository = {
 	async put(updatedBlog: BlogDbType, id: string): Promise<BlogDbType | null> {
 		const result = await blogCollection.updateOne({id: id}, {$set: updatedBlog});
 		return result.modifiedCount === 1 ? updatedBlog : null;
+	},
+	async createPostForBlog(post: PostDbType): Promise<string> {
+		await postCollection.insertOne(post);
+		return post.id;
+	},
+
+	async getPostsForBlog(blogId: string, pageNumber: number, pageSize: number, sortBy: string, sortDirection: 'desc' | 'asc'): Promise<PostDbType[]> {
+		return await postCollection
+		.find({blogId})
+		.skip((pageNumber - 1) * pageSize)
+		.limit(pageSize)
+		.sort({[sortBy]: sortDirection === 'asc' ? 1 : -1})
+		.toArray();
+	},
+
+	async getPostsCountForBlog(blogId: string): Promise<number> {
+		return await postCollection.countDocuments({blogId});
 	},
 };

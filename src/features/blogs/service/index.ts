@@ -1,6 +1,8 @@
 import {randomUUID} from "node:crypto";
 import type {BlogDbType} from "../../../db/blog-db-type";
+import type {PostDbType} from "../../../db/post-db-type";
 import type {BlogInputModel, BlogViewModel, BlogsPaginationViewModel} from "../../../input-output-types/blogs-types";
+import type {PostInputModel, PostViewModel, PostsPaginationViewModel} from "../../../input-output-types/posts-types";
 import {blogsRepository} from "../blogsRepository";
 
 export const blogsService = {
@@ -63,6 +65,48 @@ export const blogsService = {
 
 		const result = await blogsRepository.put(updatedBlog, id);
 		return result ? this.map(result) : null;
+	},
+
+	async createPostForBlog(blogId: string, post: PostInputModel): Promise<PostViewModel | null> {
+		const blogExists = await this.find(blogId);
+		if (!blogExists) return null;
+
+		const newPost: PostDbType = {
+			id: randomUUID(),
+			blogId: blogId,
+			title: post.title,
+			content: post.content,
+			blogName: 'TEST',
+			shortDescription: post.shortDescription,
+			createdAt: new Date().toISOString(),
+		};
+
+		const postId = await blogsRepository.createPostForBlog(newPost);
+		return postId ? this.mapPost(newPost) : null;
+	},
+
+	async getPostsForBlog(blogId: string, pageNumber: number, pageSize: number, sortBy: string, sortDirection: 'desc' | 'asc'): Promise<PostsPaginationViewModel> {
+		const posts = await blogsRepository.getPostsForBlog(blogId, pageNumber, pageSize, sortBy, sortDirection);
+		const totalPostsCount = await blogsRepository.getPostsCountForBlog(blogId);
+		return {
+			pagesCount: Math.ceil(totalPostsCount / pageSize),
+			page: pageNumber,
+			pageSize: pageSize,
+			totalCount: totalPostsCount,
+			items: posts,
+		};
+	},
+
+	mapPost(post: PostDbType): PostViewModel | null {
+		return {
+			id: post.id,
+			blogId: post.blogId,
+			title: post.title,
+			shortDescription: post.shortDescription,
+			content: post.content,
+			blogName: post.blogName,
+			createdAt: post.createdAt,
+		};
 	},
 
 	// Mapping logic (from DbType to ViewModel)
