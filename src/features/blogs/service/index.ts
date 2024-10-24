@@ -45,7 +45,7 @@ export const blogsService = {
 			page: pageNumber,
 			pageSize: pageSize,
 			totalCount: blogsCount,
-			items: blogs
+			items: blogs.map(this.map)
 		}
 	},
 	async del(id: string): Promise<boolean> {
