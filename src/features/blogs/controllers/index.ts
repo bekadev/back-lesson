@@ -1,4 +1,5 @@
 import {Request, Response} from "express";
+import {paginationQueries} from "../../../helpers/paginations_queries";
 import {BlogInputModel, BlogViewModel} from "../../../input-output-types/blogs-types";
 import {blogsService} from "../service";
 
@@ -32,7 +33,15 @@ export const blogControllers = {
 		return res.sendStatus(404);
 	},
 	getBlogsController: async (req: Request, res: Response<BlogViewModel[]>) => {
-		const blogs = await blogsService.getAll();
+
+		const {pageNumber, pageSize, searchNameTerm, sortBy, sortDirection} = paginationQueries(req)
+		const blogs = await blogsService.getAll(
+			pageNumber,
+			pageSize,
+			sortBy,
+			sortDirection,
+			searchNameTerm
+		);
 		return res.status(200).json(blogs);
 	},
 	putBlogController: async (req: Request<{ id: string }, any, BlogInputModel>, res: Response) => {

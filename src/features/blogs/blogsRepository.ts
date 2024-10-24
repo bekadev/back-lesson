@@ -9,8 +9,31 @@ export const blogsRepository = {
 	async find(id: string): Promise<BlogDbType | null> {
 		return await blogCollection.findOne({id: id}, {projection: {_id: 0}});
 	},
-	async getAll(): Promise<BlogDbType[]> {
-		return await blogCollection.find().toArray(); // Return raw DB data, mapping happens in the service
+	async getAll(
+		pageNumber: number,
+		pageSize: number,
+		sortBy: string,
+		sortDirection: 'desc' | 'asc',
+		searchNameTerm: string | null
+	): Promise<BlogDbType[]> {
+		const filter: any = {}
+		if (searchNameTerm) {
+			filter.title = {$regex: searchNameTerm, $options: 'i'};
+		}
+		return await blogCollection
+		.find(filter)
+		.skip((pageNumber - 1) * pageSize)
+		.limit(pageSize)
+		.sort({[sortBy]: sortDirection === 'asc' ? 1 : -1})
+		.toArray();
+	},
+	async getBlogsCount(searchNameTerm: string | null): Promise<number> {
+		const filter: any = {}
+		if (searchNameTerm) {
+			filter.title = {$regex: searchNameTerm, $options: 'i'};
+		}
+
+		return blogCollection.countDocuments(filter)
 	},
 	async del(id: string): Promise<boolean> {
 		const result = await blogCollection.deleteOne({id: id});

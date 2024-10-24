@@ -1,6 +1,6 @@
 import {randomUUID} from "node:crypto";
 import type {BlogDbType} from "../../../db/blog-db-type";
-import type {BlogInputModel, BlogViewModel} from "../../../input-output-types/blogs-types";
+import type {BlogInputModel, BlogViewModel, BlogsPaginationViewModel} from "../../../input-output-types/blogs-types";
 import {blogsRepository} from "../blogsRepository";
 
 export const blogsService = {
@@ -21,9 +21,28 @@ export const blogsService = {
 		const blog = await blogsRepository.find(id);
 		return blog ? this.map(blog) : null;
 	},
-	async getAll(): Promise<BlogViewModel[]> {
-		const blogs = await blogsRepository.getAll();
-		return blogs.map(this.map);
+	async getAll(
+		pageNumber: number,
+		pageSize: number,
+		sortBy: string,
+		sortDirection: 'desc' | 'asc',
+		searchNameTerm: string | null
+	): Promise<BlogsPaginationViewModel> {
+		const blogs = await blogsRepository.getAll(
+			pageNumber,
+			pageSize,
+			sortBy,
+			sortDirection,
+			searchNameTerm
+		);
+		const blogsCount = await blogsRepository.getBlogsCount(searchNameTerm)
+		return {
+			pageCount: Math.ceil(blogsCount / pageSize),
+			page: pageNumber,
+			pageSize: pageSize,
+			totalCount: blogsCount,
+			items: blogs.map(this.map)
+		}
 	},
 	async del(id: string): Promise<boolean> {
 		return await blogsRepository.del(id);
