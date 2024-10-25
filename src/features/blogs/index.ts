@@ -1,12 +1,7 @@
 import {Router} from 'express'
 import {adminMiddleware} from "../../middleware/auth-middleware";
 import {inputCheckErrorsMiddleware} from "../../middleware/input-check-errors-middleware";
-import {
-	titleValidator,
-	shortDescriptionValidator,
-	contentValidator,
-	blogIdValidatorParams
-} from "../posts/middlewares/postValidators";
+import {titleValidator, shortDescriptionValidator, contentValidator,} from "../posts/middlewares/postValidators";
 import {blogControllers} from "./controllers";
 import {blogValidators, findBlogValidator} from "./middlewares/blogValidators";
 
@@ -23,6 +18,5 @@ blogsRouter.post('/:id/posts',
 	titleValidator,
 	shortDescriptionValidator,
 	contentValidator,
-	blogIdValidatorParams,
 	inputCheckErrorsMiddleware, blogControllers.createPostForBlogController);
 blogsRouter.get('/:id/posts', adminMiddleware, blogControllers.getPostsForBlogController);
