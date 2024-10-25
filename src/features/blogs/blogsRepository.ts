@@ -20,7 +20,7 @@ export const blogsRepository = {
 	): Promise<BlogViewModel[]> {
 		const filter: any = {}
 		if (searchNameTerm) {
-			filter.title = {$regex: searchNameTerm, $options: 'i'};
+			filter.name = {$regex: searchNameTerm, $options: 'i'};
 		}
 		const blogs: BlogDbType[] = await blogCollection
 		.find(filter)
