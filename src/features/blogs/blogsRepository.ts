@@ -2,6 +2,7 @@ import {BlogDbType} from "../../db/blog-db-type";
 import {blogCollection, postCollection} from "../../db/mongo-db";
 import type {PostDbType} from "../../db/post-db-type";
 import type {BlogViewModel} from "../../input-output-types/blogs-types";
+import {PostViewModel} from "../../input-output-types/posts-types";
 
 export const blogsRepository = {
 	async create(blog: BlogDbType): Promise<string> {
@@ -56,12 +57,14 @@ export const blogsRepository = {
 	},
 
 	async getPostsForBlog(blogId: string, pageNumber: number, pageSize: number, sortBy: string, sortDirection: 'desc' | 'asc'): Promise<PostDbType[]> {
-		return await postCollection
+		const posts = await postCollection
 		.find({blogId})
 		.skip((pageNumber - 1) * pageSize)
 		.limit(pageSize)
 		.sort({[sortBy]: sortDirection === 'asc' ? 1 : -1})
 		.toArray();
+
+		return posts.map(this.mapPost)
 	},
 
 	async getPostsCountForBlog(blogId: string): Promise<number> {
@@ -76,5 +79,17 @@ export const blogsRepository = {
 			createdAt: blog.createdAt,
 			isMembership: blog.isMembership,
 		};
+	},
+	mapPost(post: PostDbType) {
+		const postForOutput: PostViewModel = {
+			id: post.id,
+			title: post.title,
+			shortDescription: post.shortDescription,
+			content: post.content,
+			blogId: post.blogId,
+			blogName: post.blogName,
+			createdAt: post.createdAt,
+		}
+		return postForOutput
 	},
 };

@@ -58,7 +58,6 @@ export const blogControllers = {
 		if (!blogExists) {
 			return res.sendStatus(404);
 		}
-		// Validate PostInputModel here
 		const post = await blogsService.createPostForBlog(req.params.id, req.body);
 		if (post) {
 			return res.status(201).json(post);
