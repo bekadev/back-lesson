@@ -19,4 +19,4 @@ blogsRouter.post('/:id/posts',
 	shortDescriptionValidator,
 	contentValidator,
 	inputCheckErrorsMiddleware, blogControllers.createPostForBlogController);
-blogsRouter.get('/:id/posts', adminMiddleware, blogControllers.getPostsForBlogController);
+blogsRouter.get('/:id/posts', blogControllers.getPostsForBlogController);
