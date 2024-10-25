@@ -66,6 +66,11 @@ export const blogControllers = {
 		return res.sendStatus(400);
 	},
 	getPostsForBlogController: async (req: Request<{ id: string }>, res: Response<PostsPaginationViewModel>) => {
+		const blogExists = await blogsService.find(req.params.id);
+		if (!blogExists) {
+			return res.sendStatus(404);
+		}
+
 		const {pageNumber, pageSize, sortBy, sortDirection} = paginationQueries(req);
 		const posts = await blogsService.getPostsForBlog(req.params.id, pageNumber, pageSize, sortBy, sortDirection);
 		return res.status(200).json(posts);
