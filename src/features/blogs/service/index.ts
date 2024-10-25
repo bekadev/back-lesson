@@ -24,7 +24,6 @@ export const blogsService = {
 		return blog ? this.map(blog) : null;
 	},
 	async getAll(
-		id: string,
 		pageNumber: number,
 		pageSize: number,
 		sortBy: string,
@@ -32,7 +31,6 @@ export const blogsService = {
 		searchNameTerm: string | null
 	): Promise<BlogsPaginationViewModel> {
 		const blogs = await blogsRepository.getAll(
-			id,
 			pageNumber,
 			pageSize,
 			sortBy,
@@ -45,7 +43,7 @@ export const blogsService = {
 			page: pageNumber,
 			pageSize: pageSize,
 			totalCount: blogsCount,
-			items: blogs.map(this.map)
+			items: blogs
 		}
 	},
 	async del(id: string): Promise<boolean> {

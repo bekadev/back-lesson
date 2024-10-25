@@ -1,6 +1,7 @@
 import {BlogDbType} from "../../db/blog-db-type";
 import {blogCollection, postCollection} from "../../db/mongo-db";
 import type {PostDbType} from "../../db/post-db-type";
+import type {BlogViewModel} from "../../input-output-types/blogs-types";
 
 export const blogsRepository = {
 	async create(blog: BlogDbType): Promise<string> {
@@ -11,25 +12,23 @@ export const blogsRepository = {
 		return await blogCollection.findOne({id: id}, {projection: {_id: 0}});
 	},
 	async getAll(
-		id: string,
 		pageNumber: number,
 		pageSize: number,
 		sortBy: string,
 		sortDirection: 'desc' | 'asc',
 		searchNameTerm: string | null
-	): Promise<BlogDbType[]> {
-		const filter: any = {
-			id: id
-		}
+	): Promise<BlogViewModel[]> {
+		const filter: any = {}
 		if (searchNameTerm) {
 			filter.title = {$regex: searchNameTerm, $options: 'i'};
 		}
-		return await blogCollection
-		.find(filter, {projection: {_id: 0}})
+		const blogs: BlogDbType[] = await blogCollection
+		.find(filter)
 		.skip((pageNumber - 1) * pageSize)
 		.limit(pageSize)
 		.sort({[sortBy]: sortDirection === 'asc' ? 1 : -1})
 		.toArray();
+		return blogs.map(p => this.map(p));
 	},
 	async getBlogsCount(searchNameTerm: string | null): Promise<number> {
 		const filter: any = {}
@@ -67,5 +66,15 @@ export const blogsRepository = {
 
 	async getPostsCountForBlog(blogId: string): Promise<number> {
 		return await postCollection.countDocuments({blogId});
+	},
+	map(blog: BlogDbType): BlogViewModel {
+		return {
+			id: blog.id,
+			name: blog.name,
+			description: blog.description,
+			websiteUrl: blog.websiteUrl,
+			createdAt: blog.createdAt,
+			isMembership: blog.isMembership,
+		};
 	},
 };
