@@ -20,6 +20,7 @@ export const blogsRepository = {
 	): Promise<BlogViewModel[]> {
 		const filter: any = {}
 		if (searchNameTerm) {
+			// Используем корректное поле для поиска по названию
 			filter.name = {$regex: searchNameTerm, $options: 'i'};
 		}
 		const blogs: BlogDbType[] = await blogCollection
@@ -28,15 +29,14 @@ export const blogsRepository = {
 		.limit(pageSize)
 		.sort({[sortBy]: sortDirection === 'asc' ? 1 : -1})
 		.toArray();
-		return blogs.map(p => this.map(p));
+		return blogs.map((p) => this.map(p));
 	},
 	async getBlogsCount(searchNameTerm: string | null): Promise<number> {
-		const filter: any = {}
+		const filter: any = {};
 		if (searchNameTerm) {
-			filter.title = {$regex: searchNameTerm, $options: 'i'};
+			filter.name = {$regex: searchNameTerm, $options: 'i'};
 		}
-
-		return blogCollection.countDocuments(filter)
+		return blogCollection.countDocuments(filter);
 	},
 	async del(id: string): Promise<boolean> {
 		const result = await blogCollection.deleteOne({id: id});
