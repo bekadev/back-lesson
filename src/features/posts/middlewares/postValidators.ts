@@ -1,10 +1,10 @@
-import {body} from 'express-validator'
-import {blogsRepository} from '../../blogs/blogsRepository'
 import {NextFunction, Request, Response} from 'express'
-import {postsRepository} from '../postsRepository'
+import {body} from 'express-validator'
 import {adminMiddleware} from "../../../middleware/auth-middleware";
 // import {InputValidationMiddleware} from "../../../middleware/input-validation-middleware";
 import {inputCheckErrorsMiddleware} from "../../../middleware/input-check-errors-middleware";
+import {blogsRepository} from '../../blogs/blogsRepository'
+import {postsRepository} from '../postsRepository'
 
 // title: string // max 30
 // shortDescription: string // max 100
@@ -46,12 +46,12 @@ export const findPostValidator = (req: Request<{ id: string }>, res: Response, n
 
 export const postValidators = [
 	adminMiddleware,
-	// findPostValidator,
 	titleValidator,
 	shortDescriptionValidator,
 	contentValidator,
-	blogIdValidator,
 	inputCheckErrorsMiddleware,
+	blogIdValidator,
 
+	// findPostValidator,
 	// InputValidationMiddleware,
 ]
