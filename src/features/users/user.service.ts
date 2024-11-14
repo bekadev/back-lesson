@@ -55,6 +55,20 @@ export const usersService = {
 	// 	return await usersRepository.create(newUser);
 	// },
 
+	// async create(dto: CreateUserInputDto): Promise<string> {
+	// 	const {login, password, email} = dto
+	// 	const passwordHash = await bcryptService.generateHash(password)
+	//
+	// 	const newUser: IUserDB = {
+	// 		login,
+	// 		email,
+	// 		passwordHash,
+	// 		createdAt: new Date(),
+	//
+	// 	};
+	// 	return await usersRepository.create(newUser);
+	// },
+
 	async delete(id: string): Promise<boolean> {
 		const user = await usersRepository.findById(id);
 		if (!user) return false;

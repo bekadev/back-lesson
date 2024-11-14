@@ -79,14 +79,11 @@ usersRouter.post(
 	}>) => {
 		const result = await usersService.create(req.body);
 
-		// Check if the creation was successful
 		if (result.success) {
-			// Fetch the newly created user and send it with a 201 status
 			const newUser = await usersQwRepository.findById(result.userId);
 			return res.status(201).send(newUser!);
 		}
 
-		// Otherwise, return a 400 status with the errorsMessages array
 		return res.status(400).send({errorsMessages: result.errorsMessages});
 	}
 );

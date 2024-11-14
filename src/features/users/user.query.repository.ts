@@ -14,10 +14,16 @@ export const usersQwRepository = {
 		const {sortBy, sortDirection, pageSize, pageNumber, searchLoginTerm, searchEmailTerm} = sortQueryDto;
 
 		const loginAndEmailFilter: any = {
-			$or: [{$regex: searchLoginTerm, $options: "i"}, {
-				$regex: searchEmailTerm,
-				$options: "i"
-			}]
+			$or: [
+				{
+					login: {$regex: searchLoginTerm ?? '', $options: "i"}
+				},
+				{
+					email: {
+						$regex: searchEmailTerm ?? '',
+						$options: "i"
+					}
+				}]
 		};
 		// if (searchLoginTerm) {
 		// 	loginAndEmailFilter.login = {$regex: searchLoginTerm, $options: "i"};
