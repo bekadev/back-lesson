@@ -1,5 +1,5 @@
 import {Request, Response} from "express";
-import {paginationQueries} from "../../../helpers/paginations_queries";
+import {paginationQueries} from "../../../common/helpers/paginations_queries";
 import {BlogInputModel, BlogViewModel, type BlogsPaginationViewModel} from "../../../input-output-types/blogs-types";
 import type {PostInputModel, PostViewModel, PostsPaginationViewModel} from "../../../input-output-types/posts-types";
 import {blogsService} from "../service";

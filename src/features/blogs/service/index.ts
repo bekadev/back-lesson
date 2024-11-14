@@ -1,3 +1,4 @@
+import type {WithId} from "mongodb";
 import {randomUUID} from "node:crypto";
 import type {BlogDbType} from "../../../db/blog-db-type";
 import type {PostDbType} from "../../../db/post-db-type";
@@ -8,7 +9,7 @@ import {blogsRepository} from "../blogsRepository";
 export const blogsService = {
 	async create(blog: BlogInputModel): Promise<BlogViewModel | null> {
 		const newBlog: BlogDbType = {
-			id: randomUUID(),
+
 			name: blog.name,
 			description: blog.description,
 			websiteUrl: blog.websiteUrl,
@@ -16,7 +17,7 @@ export const blogsService = {
 			isMembership: false,
 		};
 		const newBlogId = await blogsRepository.create(newBlog);
-		const createdBlog = await this.find(newBlogId);
+		const createdBlog = await blogsRepository.find(newBlogId);
 		return createdBlog ? this.map(createdBlog) : null;
 	},
 	async find(id: string): Promise<BlogViewModel | null> {
@@ -53,7 +54,7 @@ export const blogsService = {
 		return await blogsRepository.delMany(); // Logic inside repository to ensure multiple deletions.
 	},
 	async put(blog: BlogInputModel, id: string): Promise<BlogViewModel | null> {
-		const existingBlog = await this.find(id);
+		const existingBlog = await blogsRepository.find(id);
 		if (!existingBlog) return null;
 
 		const updatedBlog = {
@@ -64,7 +65,12 @@ export const blogsService = {
 		};
 
 		const result = await blogsRepository.put(updatedBlog, id);
-		return result ? this.map(result) : null;
+		if (result) {
+			return this.map(updatedBlog)
+		} else {
+			throw new Error()
+		}
+
 	},
 
 	async createPostForBlog(blogId: string, post: PostInputModel): Promise<PostViewModel | null> {
@@ -110,9 +116,9 @@ export const blogsService = {
 	},
 
 	// Mapping logic (from DbType to ViewModel)
-	map(blog: BlogDbType): BlogViewModel {
+	map(blog: WithId<BlogDbType>): BlogViewModel {
 		return {
-			id: blog.id,
+			id: blog._id.toString(),
 			name: blog.name,
 			description: blog.description,
 			websiteUrl: blog.websiteUrl,

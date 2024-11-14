@@ -5,14 +5,14 @@ import {postsRepository} from "../postsRepository";
 
 export const postsService = {
 	async create(post: PostInputModel): Promise<PostViewModel | null> {
-		const blogName = await blogsRepository.find(post.blogId)
+		const blog = await blogsRepository.find(post.blogId)
 		const newPost: PostDbType = {
 			id: new Date().toISOString() + Math.random(),
 			title: post.title,
 			content: post.content,
 			shortDescription: post.shortDescription,
-			blogId: blogName!.id,
-			blogName: blogName!.name,
+			blogId: blog!._id.toString(),
+			blogName: blog!.name,
 			createdAt: new Date().toISOString(),
 		}
 
@@ -64,7 +64,7 @@ export const postsService = {
 			...existingPost,
 			title: post.title,
 			shortDescription: post.shortDescription,
-			blogId: blog.id,
+			blogId: blog._id.toString(),
 			content: post.content
 		};
 

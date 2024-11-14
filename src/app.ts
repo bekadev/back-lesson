@@ -1,19 +1,21 @@
-import express from 'express'
 import cors from 'cors'
-import {SETTINGS} from './settings'
-import {allDataRouter} from "./all-data";
+import express from 'express'
+import {authRouter} from "./auth/auth.router";
 import {blogsRouter} from "./features/blogs";
+import {clearDataRouter} from "./features/clear-data";
 import {postsRouter} from "./features/posts";
+import {usersRouter} from "./features/users";
+import {SETTINGS} from './settings'
 
-export const app = express() // создать приложение
-app.use(express.json()) // создание свойств-объектов body во всех реквестах
-app.use(cors()) // разрешить любым фронтам делать запросы на наш бэк
+export const app = express()
+app.use(express.json())
+app.use(cors())
 
 app.get('/', (req, res) => {
-	// эндпоинт, который будет показывать на верселе какая версия бэкэнда сейчас залита
-	res.status(200).json({version: '3.0'})
+	res.status(200).json({version: '4.0'})
 })
-// app.get(SETTINGS.PATH.VIDEOS, getVideosController)
 app.use(SETTINGS.PATH.BLOGS, blogsRouter)
 app.use(SETTINGS.PATH.POSTS, postsRouter)
-app.use(SETTINGS.PATH.SOME, allDataRouter)
+app.use(SETTINGS.PATH.USERS, usersRouter)
+app.use(SETTINGS.PATH.CLEAR_DATA, clearDataRouter)
+app.use(SETTINGS.PATH.AUTH, authRouter)

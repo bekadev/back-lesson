@@ -7,9 +7,12 @@
     "watch": "tsc -w",
     "dev": "yarn nodemon --inspect dist/index.js",
     "jest": "jest -i",
-    "jest:coverage": "jest -i --coverage"
+    "jest:coverage": "jest -i --coverage",
+    "serveo:run": "ssh -R 80:localhost:3000 serveo.net"
   },
   "dependencies": {
+    "@types/bcrypt": "^5.0.2",
+    "bcrypt": "^5.1.1",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "date-fns": "^3.6.0",

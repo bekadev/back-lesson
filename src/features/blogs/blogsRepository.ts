@@ -1,3 +1,4 @@
+import {ObjectId, type WithId} from "mongodb";
 import {BlogDbType} from "../../db/blog-db-type";
 import {blogCollection, postCollection} from "../../db/mongo-db";
 import type {PostDbType} from "../../db/post-db-type";
@@ -8,19 +9,8 @@ export const blogsRepository = {
 		const result = await blogCollection.insertOne(blog);
 		return result.insertedId.toString();
 	},
-	async find(id: string): Promise<BlogViewModel | null> {
-		const result = await blogCollection.findOne({id: id})
-
-		if (!result) return null;
-
-		return {
-			id: result._id.toString(),
-			name: result.name,
-			createdAt: result.createdAt,
-			description: result.description,
-			websiteUrl: result.websiteUrl,
-			isMembership: result.isMembership,
-		}
+	async find(id: string): Promise<WithId<BlogEntityModel> | null> {
+		return blogCollection.findOne({_id: new ObjectId(id)})
 	},
 	async getAll(
 		pageNumber: number,
@@ -61,16 +51,16 @@ export const blogsRepository = {
 		return blogCollection.countDocuments(filter);
 	},
 	async del(id: string): Promise<boolean> {
-		const result = await blogCollection.deleteOne({id: id});
+		const result = await blogCollection.deleteOne({_id: new ObjectId(id)});
 		return result.deletedCount === 1;
 	},
 	async delMany(): Promise<boolean> {
 		const result = await blogCollection.deleteMany({});
 		return result.deletedCount > 0; // Ensure that it checks for multiple deletions
 	},
-	async put(updatedBlog: BlogDbType, id: string): Promise<BlogDbType | null> {
-		const result = await blogCollection.updateOne({id: id}, {$set: updatedBlog});
-		return result.modifiedCount === 1 ? updatedBlog : null;
+	async put(updatedBlog: BlogDbType, id: string): Promise<boolean> {
+		const result = await blogCollection.updateOne({_id: new ObjectId(id)}, {$set: updatedBlog});
+		return !!result.modifiedCount;
 	},
 	async createPostForBlog(post: PostDbType): Promise<string> {
 		await postCollection.insertOne(post);
