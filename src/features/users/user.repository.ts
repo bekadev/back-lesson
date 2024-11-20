@@ -24,6 +24,11 @@ export const usersRepository = {
 		});
 
 	},
+	async doesExistById(id: string): Promise<boolean> {
+		if (!this._checkObjectId(id)) return false;
+		const isUser = await usersCollection.findOne({_id: new ObjectId(id)});
+		return !!isUser
+	},
 	_checkObjectId(id: string): boolean {
 		return ObjectId.isValid(id)
 	},
