@@ -1,6 +1,6 @@
-import {postCollection} from "../../db/mongo-db";
+import {PostViewModel} from "../../common/input-output-types/posts-types";
+import {postCollection, commentsCollection} from "../../db/mongo-db";
 import {PostDbType} from "../../db/post-db-type";
-import {PostViewModel} from "../../input-output-types/posts-types";
 
 export const postsRepository = {
 	async create(post: PostDbType): Promise<string> {
@@ -35,5 +35,32 @@ export const postsRepository = {
 	async put(updatedPost: PostDbType, id: string): Promise<PostDbType | null> {
 		const result = await postCollection.updateOne({id: id}, {$set: updatedPost})
 		return result.modifiedCount === 1 ? updatedPost : null;
+	},
+	async createCommentsForPost(comments: any): Promise<string> {
+		await postCollection.insertOne(comments);
+		return comments.id;
+	},
+	async getComments(blogId: string, pageNumber: number, pageSize: number, sortBy: string, sortDirection: 'desc' | 'asc') {
+		const posts = await commentsCollection
+		.find({blogId})
+		.skip((pageNumber - 1) * pageSize)
+		.limit(pageSize)
+		.sort({[sortBy]: sortDirection === 'asc' ? 1 : -1})
+		.toArray();
+
+		return posts.map(post => {
+			return {
+				id: post.id,
+				content: post.content,
+				commentatorInfo: {
+					userId: post.commentatorInfo.userId,
+					userLogin: post.commentatorInfo.userLogin
+				},
+				createdAt: post.createdAt
+			}
+		})
+	},
+	async getCommentsForPost(postId: string): Promise<number> {
+		return await commentsCollection.countDocuments({postId});
 	},
 }

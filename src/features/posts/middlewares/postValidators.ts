@@ -1,6 +1,6 @@
 import {body, param} from 'express-validator'
-import {adminMiddleware} from "../../../middleware/auth-middleware";
-import {inputCheckErrorsMiddleware} from "../../../middleware/input-check-errors-middleware";
+import {adminMiddleware} from "../../../common/middleware/auth-middleware";
+import {inputCheckErrorsMiddleware} from "../../../common/middleware/input-check-errors-middleware";
 import {blogsRepository} from '../../blogs/blogsRepository'
 
 export const titleValidator = body('title').trim().isString().isLength({min: 1, max: 30}).withMessage('title error')

@@ -1,10 +1,10 @@
 import {WithId} from "mongodb";
-import {bcryptService} from "../common/adapters/bcrypt.service";
-import {jwtService} from "../common/adapters/jwt.service";
-import {Result} from "../common/result/result.type";
-import {ResultStatus} from "../common/result/resultCode";
-import type {IUserDB} from "../features/users/types/user.db.interface";
-import {usersRepository} from "../features/users/user.repository";
+import {bcryptService} from "../../common/adapters/bcrypt.service";
+import {jwtService} from "../../common/adapters/jwt.service";
+import {Result} from "../../common/result/result.type";
+import {ResultStatus} from "../../common/result/resultCode";
+import type {IUserDB} from "../users/types/user.db.interface";
+import {usersRepository} from "../users/user.repository";
 
 export const authService = {
 	async loginUser(

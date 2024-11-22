@@ -1,14 +1,15 @@
 import {Response, Router} from "express";
-import {resultCodeToHttpException} from "../common/result/resultCodeToHttpException";
-import {HttpStatuses} from "../common/types/httpStatuses";
-import type {IdType} from "../common/types/id";
+import {routersPaths} from "../../common/path/paths";
+import {resultCodeToHttpException} from "../../common/result/resultCodeToHttpException";
+import {HttpStatuses} from "../../common/types/httpStatuses";
+import type {IdType} from "../../common/types/id";
 // import {routersPaths} from "../common/path/paths";
-import {RequestWithBody, type RequestWithUserId} from "../common/types/requests";
-import {ResultStatus} from "../common/types/resultCode";
-import {loginOrEmailValidation} from "../features/users/middlewares/login.or.emaol.validation";
-import {passwordValidation} from "../features/users/middlewares/password.validation";
-import {usersQwRepository} from "../features/users/user.query.repository";
-import {inputCheckErrorsMiddleware} from "../middleware/input-check-errors-middleware";
+import {RequestWithBody, type RequestWithUserId} from "../../common/types/requests";
+import {ResultStatus} from "../../common/types/resultCode";
+import {inputValidation} from "../../common/validation/input.validation";
+import {loginOrEmailValidation} from "../users/middlewares/login.or.emaol.validation";
+import {passwordValidation} from "../users/middlewares/password.validation";
+import {usersQwRepository} from "../users/user.query.repository";
 
 import {authService} from "./auth.service";
 import {accessTokenGuard} from "./guards/access.token.guard";
@@ -16,10 +17,11 @@ import {LoginInputDto} from "./types/login.input.dto";
 
 export const authRouter = Router();
 
-authRouter.post('/auth/login',
+authRouter.post(
+	routersPaths.auth.login,
 	passwordValidation,
 	loginOrEmailValidation,
-	inputCheckErrorsMiddleware,
+	inputValidation,
 	async (req: RequestWithBody<LoginInputDto>, res: Response) => {
 		const {loginOrEmail, password} = req.body;
 
@@ -38,7 +40,7 @@ authRouter.post('/auth/login',
 );
 
 authRouter.get(
-	'/auth/me',
+	routersPaths.auth.me,
 	accessTokenGuard,
 	async (req: RequestWithUserId<IdType>, res: Response) => {
 		const userId = req.user?.id as string;

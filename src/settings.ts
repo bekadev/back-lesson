@@ -13,9 +13,11 @@ export const SETTINGS = {
 		POSTS: '/posts',
 		BLOGS: '/blogs',
 		USERS: '/users',
-		AUTH: '/auth/login'
+		AUTH: '/auth',
+		COMMENTS: '/comments'
 	},
 	BLOG_COLLECTION_NAME: 'blog',
 	POST_COLLECTION_NAME: 'post',
-	USERS_COLLECTION_NAME: 'users'
+	USERS_COLLECTION_NAME: 'users',
+	COMMENTS_COLLECTION_NAME: 'comments'
 }

@@ -4,14 +4,13 @@ import {IUserDB} from "./types/user.db.interface";
 import {usersRepository} from "./user.repository";
 
 type CreateUserResult =
-	| { success: true; userId: string } // Success case
-	| { success: false; errorsMessages: { field: string; message: string }[] }; // Error case
+	| { success: true; userId: string }
+	| { success: false; errorsMessages: { field: string; message: string }[] };
 
 export const usersService = {
 	async create(dto: CreateUserInputDto): Promise<CreateUserResult> {
 		const {login, password, email} = dto;
 
-		// Check if a user with the same login or email already exists
 		const existingUserByLogin = await usersRepository.findByLoginOrEmail(login);
 		if (existingUserByLogin) {
 			return {
@@ -28,7 +27,6 @@ export const usersService = {
 			};
 		}
 
-		// If unique, create the user
 		const passwordHash = await bcryptService.generateHash(password);
 		const newUser: IUserDB = {
 			login,
@@ -41,41 +39,11 @@ export const usersService = {
 		return {success: true, userId};
 	},
 
-	// async create(dto: CreateUserInputDto): Promise<string> {
-	// 	const {login, password, email} = dto
-	// 	const passwordHash = await bcryptService.generateHash(password)
-	//
-	// 	const newUser: IUserDB = {
-	// 		login,
-	// 		email,
-	// 		passwordHash,
-	// 		createdAt: new Date(),
-	//
-	// 	};
-	// 	return await usersRepository.create(newUser);
-	// },
-
-	// async create(dto: CreateUserInputDto): Promise<string> {
-	// 	const {login, password, email} = dto
-	// 	const passwordHash = await bcryptService.generateHash(password)
-	//
-	// 	const newUser: IUserDB = {
-	// 		login,
-	// 		email,
-	// 		passwordHash,
-	// 		createdAt: new Date(),
-	//
-	// 	};
-	// 	return await usersRepository.create(newUser);
-	// },
-
 	async delete(id: string): Promise<boolean> {
 		const user = await usersRepository.findById(id);
 		if (!user) return false;
 
 		return await usersRepository.delete(id);
-
-
 	},
 }
 

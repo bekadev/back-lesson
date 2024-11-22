@@ -1,6 +1,11 @@
 import {Request, Response} from "express";
 import {paginationQueries} from "../../../common/helpers/paginations_queries";
-import {PostInputModel, PostViewModel, type PostsPaginationViewModel} from "../../../input-output-types/posts-types";
+import type {CommentsInputModel, CommentsViewModel} from "../../../common/input-output-types/comments-types";
+import {
+	PostInputModel,
+	PostViewModel,
+	type PostsPaginationViewModel
+} from "../../../common/input-output-types/posts-types";
 import {postsService} from "../service";
 
 export const postControllers = {
@@ -42,5 +47,31 @@ export const postControllers = {
 			return res.status(204).json(updatedPost);
 		}
 		return res.sendStatus(404);
-	}
+	},
+	createCommentsForPostController: async (req: Request<{
+		id: string
+	}, any, CommentsInputModel>, res: Response<CommentsViewModel>) => {
+		const postId = await postsService.find(req.params.id)
+		if (!postId) {
+			return res.sendStatus(404);
+		}
+
+		const comments = await postsService.createCommentsForPost(req.params.id, req.body)
+
+		if (comments) {
+			return res.status(201).json(comments);
+		}
+		return res.sendStatus(400);
+
+	},
+	getCommentsForPostController: async (req: Request<{ id: string }>, res: Response) => {
+		const postId = await postsService.find(req.params.id)
+		if (!postId) {
+			return res.sendStatus(404);
+		}
+
+		const {pageNumber, pageSize, sortBy, sortDirection} = paginationQueries(req);
+		const posts = await postsService.getComments(req.params.id, pageNumber, pageSize, sortBy, sortDirection);
+		return res.status(200).json(posts);
+	},
 }

@@ -1,6 +1,6 @@
 import {Router} from 'express'
-import {adminMiddleware} from "../../middleware/auth-middleware";
-import {inputCheckErrorsMiddleware} from "../../middleware/input-check-errors-middleware";
+import {adminMiddleware} from "../../common/middleware/auth-middleware";
+import {inputCheckErrorsMiddleware} from "../../common/middleware/input-check-errors-middleware";
 import {titleValidator, shortDescriptionValidator, contentValidator,} from "../posts/middlewares/postValidators";
 import {blogControllers} from "./controllers";
 import {blogValidators, findBlogValidator} from "./middlewares/blogValidators";

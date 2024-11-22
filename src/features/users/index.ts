@@ -1,11 +1,11 @@
 import {Router, Response} from "express";
+import {adminMiddleware} from "../../common/middleware/auth-middleware";
+import {inputCheckErrorsMiddleware} from "../../common/middleware/input-check-errors-middleware";
 import type {IdType} from "../../common/types/id";
 import type {IPagination} from "../../common/types/pagination";
 import type {RequestWithQuery, RequestWithBody, RequestWithParams} from "../../common/types/requests";
 import {sortQueryFieldsUtil} from "../../common/utils/sortQueryFields.util";
 import {pageNumberValidation} from "../../common/validation/sorting.pagination.validation";
-import {adminMiddleware} from "../../middleware/auth-middleware";
-import {inputCheckErrorsMiddleware} from "../../middleware/input-check-errors-middleware";
 import {emailValidation} from "./middlewares/email.validation";
 import {loginValidation} from "./middlewares/login.validation";
 import {passwordValidation} from "./middlewares/password.validation";
@@ -48,24 +48,6 @@ usersRouter.get(
 		return res.status(200).send(allUsers);
 	}
 );
-
-
-// usersRouter.post(
-// 	"/",
-// 	adminMiddleware,
-// 	passwordValidation,
-// 	loginValidation,
-// 	emailValidation,
-// 	inputCheckErrorsMiddleware,
-// 	async (req: RequestWithBody<CreateUserInputDto>, res: Response<IUserView>) => {
-// 		const {login, password, email} = req.body
-//
-// 		const userId = await usersService.create({login, password, email});
-// 		const newUser = await usersQwRepository.findById(userId);
-//
-// 		return res.status(201).send(newUser!);
-// 	}
-// );
 
 usersRouter.post(
 	"/",

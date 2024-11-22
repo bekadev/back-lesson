@@ -1,5 +1,15 @@
+import {ObjectId} from "mongodb";
+import type {
+	CommentsInputModel,
+	CommentsViewModel,
+	CommentsPaginationViewModel
+} from "../../../common/input-output-types/comments-types";
+import {
+	PostInputModel,
+	PostViewModel,
+	type PostsPaginationViewModel
+} from "../../../common/input-output-types/posts-types";
 import {PostDbType} from "../../../db/post-db-type";
-import {PostInputModel, PostViewModel, type PostsPaginationViewModel} from "../../../input-output-types/posts-types";
 import {blogsRepository} from "../../blogs/blogsRepository";
 import {postsRepository} from "../postsRepository";
 
@@ -70,6 +80,42 @@ export const postsService = {
 
 		const result = await postsRepository.put(updatedPost, id)
 		return result ? this.map(result) : null;
+	},
+	async createCommentsForPost(postId: string, comments: CommentsInputModel): Promise<CommentsViewModel | null> {
+		const postExists = await this.find(postId);
+		if (!postExists) return null;
+
+		const newComments = {
+			id: ObjectId.toString(),
+			content: comments.content,
+			commentatorInfo: {
+				userId: "",
+				userLogin: ""
+			},
+			createdAt: new Date().toISOString()
+		};
+
+		const isCreated = await postsRepository.createCommentsForPost(newComments);
+		return isCreated ? {
+			id: newComments.id,
+			content: newComments.content,
+			commentatorInfo: {
+				userId: newComments.commentatorInfo.userId,
+				userLogin: newComments.commentatorInfo.userLogin
+			},
+			createdAt: newComments.createdAt
+		} : null;
+	},
+	async getComments(postId: string, pageNumber: number, pageSize: number, sortBy: string, sortDirection: 'desc' | 'asc'): Promise<CommentsPaginationViewModel> {
+		const posts = await postsRepository.getComments(postId, pageNumber, pageSize, sortBy, sortDirection);
+		const totalPostsCount = await postsRepository.getCommentsForPost(postId);
+		return {
+			pagesCount: Math.ceil(totalPostsCount / pageSize),
+			page: pageNumber,
+			pageSize: pageSize,
+			totalCount: totalPostsCount,
+			items: posts,
+		};
 	},
 	map(post: PostDbType) {
 		const postForOutput: PostViewModel = {

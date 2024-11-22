@@ -1,9 +1,17 @@
 import type {WithId} from "mongodb";
 import {randomUUID} from "node:crypto";
+import type {
+	BlogInputModel,
+	BlogViewModel,
+	BlogsPaginationViewModel
+} from "../../../common/input-output-types/blogs-types";
+import type {
+	PostInputModel,
+	PostViewModel,
+	PostsPaginationViewModel
+} from "../../../common/input-output-types/posts-types";
 import type {BlogDbType} from "../../../db/blog-db-type";
 import type {PostDbType} from "../../../db/post-db-type";
-import type {BlogInputModel, BlogViewModel, BlogsPaginationViewModel} from "../../../input-output-types/blogs-types";
-import type {PostInputModel, PostViewModel, PostsPaginationViewModel} from "../../../input-output-types/posts-types";
 import {blogsRepository} from "../blogsRepository";
 
 export const blogsService = {

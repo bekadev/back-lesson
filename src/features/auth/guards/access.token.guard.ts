@@ -1,7 +1,7 @@
 import {NextFunction, Request, Response} from "express";
-import {jwtService} from "../../common/adapters/jwt.service";
-import {IdType} from "../../common/types/id";
-import {usersRepository} from "../../features/users/user.repository";
+import {jwtService} from "../../../common/adapters/jwt.service";
+import {IdType} from "../../../common/types/id";
+import {usersRepository} from "../../users/user.repository";
 
 export const accessTokenGuard = async (req: Request,
                                        res: Response,

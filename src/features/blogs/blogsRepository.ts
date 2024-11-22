@@ -1,8 +1,8 @@
 import {ObjectId, type WithId} from "mongodb";
+import type {BlogViewModel, BlogEntityModel} from "../../common/input-output-types/blogs-types";
 import {BlogDbType} from "../../db/blog-db-type";
 import {blogCollection, postCollection} from "../../db/mongo-db";
 import type {PostDbType} from "../../db/post-db-type";
-import type {BlogViewModel, BlogEntityModel} from "../../input-output-types/blogs-types";
 
 export const blogsRepository = {
 	async create(blog: BlogEntityModel): Promise<string> {
@@ -91,26 +91,4 @@ export const blogsRepository = {
 	async getPostsCountForBlog(blogId: string): Promise<number> {
 		return await postCollection.countDocuments({blogId});
 	},
-	// map(blog: BlogDbType): BlogViewModel {
-	// 	return {
-	// 		id: blog.id,
-	// 		name: blog.name,
-	// 		description: blog.description,
-	// 		websiteUrl: blog.websiteUrl,
-	// 		createdAt: blog.createdAt,
-	// 		isMembership: blog.isMembership,
-	// 	};
-	// },
-	// mapPost(post: PostDbType) {
-	// 	const postForOutput: PostViewModel = {
-	// 		id: post.id,
-	// 		title: post.title,
-	// 		shortDescription: post.shortDescription,
-	// 		content: post.content,
-	// 		blogId: post.blogId,
-	// 		blogName: post.blogName,
-	// 		createdAt: post.createdAt,
-	// 	}
-	// 	return postForOutput
-	// },
 };
