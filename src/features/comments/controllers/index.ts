@@ -18,11 +18,11 @@ export const commentsControllers = {
 		return res.sendStatus(404);
 	},
 	putCommentsController: async (req: Request<{ id: string }, any, PostInputModel>, res: Response) => {
-		const updatedPost = await commentsService.put(req.body, req.params.id,)
-
-		if (updatedPost) {
-			return res.status(204).json(updatedPost);
-		}
-		return res.sendStatus(404);
+		// const updatedPost = await commentsService.put(req.body, req.params.id,)
+		//
+		// if (updatedPost) {
+		// 	return res.status(204).json(updatedPost);
+		// }
+		// return res.sendStatus(404);
 	}
 }
