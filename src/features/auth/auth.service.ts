@@ -12,6 +12,7 @@ export const authService = {
 		password: string,
 	): Promise<Result<{ accessToken: string } | null>> {
 		const result = await this.checkUserCredentials(loginOrEmail, password);
+		console.log(result)
 		if (result.status !== ResultStatus.Success)
 			return {
 				status: ResultStatus.Unauthorized,

@@ -3,7 +3,6 @@ import {routersPaths} from "../../common/path/paths";
 import {resultCodeToHttpException} from "../../common/result/resultCodeToHttpException";
 import {HttpStatuses} from "../../common/types/httpStatuses";
 import type {IdType} from "../../common/types/id";
-// import {routersPaths} from "../common/path/paths";
 import {RequestWithBody, type RequestWithUserId} from "../../common/types/requests";
 import {ResultStatus} from "../../common/types/resultCode";
 import {inputValidation} from "../../common/validation/input.validation";
@@ -26,6 +25,7 @@ authRouter.post(
 		const {loginOrEmail, password} = req.body;
 
 		const result = await authService.loginUser(loginOrEmail, password);
+		console.log(result)
 
 		if (result.status !== ResultStatus.Success) {
 			return res

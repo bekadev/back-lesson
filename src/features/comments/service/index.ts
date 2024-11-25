@@ -9,6 +9,6 @@ export const commentsService = {
 		return await commentsRepository.del(id);
 	},
 	async put(post: any, id: string) {
-		return console.log('1')
+		return 1
 	},
 }
