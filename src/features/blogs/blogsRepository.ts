@@ -22,7 +22,6 @@ export const blogsRepository = {
 	): Promise<BlogViewModel[]> {
 		const filter: any = {}
 		if (searchNameTerm) {
-			// Используем корректное поле для поиска по названию
 			filter.name = {$regex: searchNameTerm, $options: 'i'};
 		}
 
@@ -57,7 +56,7 @@ export const blogsRepository = {
 	},
 	async delMany(): Promise<boolean> {
 		const result = await blogCollection.deleteMany({});
-		return result.deletedCount > 0; // Ensure that it checks for multiple deletions
+		return result.deletedCount > 0;
 	},
 	async put(updatedBlog: BlogDbType, id: string): Promise<boolean> {
 		const result = await blogCollection.updateOne({_id: new ObjectId(id)}, {$set: updatedBlog});

@@ -1,5 +1,6 @@
 import {Collection, Db, MongoClient} from "mongodb";
 import type {BlogEntityModel} from "../common/input-output-types/blogs-types";
+import type {CommentsEntityModel} from "../common/input-output-types/comments-types";
 import type {PostEntityModel} from "../common/input-output-types/posts-types";
 import type {IUserDB} from "../features/users/types/user.db.interface";
 import {SETTINGS} from "../settings";
@@ -14,7 +15,7 @@ export const blogCollection: Collection<BlogEntityModel> = db.collection<BlogEnt
 export const postCollection: Collection<PostEntityModel> = db.collection<PostEntityModel>(SETTINGS.POST_COLLECTION_NAME)
 // export const postCollection: Collection<PostDbType> = db.collection<PostDbType>(SETTINGS.POST_COLLECTION_NAME)
 export const usersCollection: Collection<IUserDB> = db.collection<IUserDB>(SETTINGS.USERS_COLLECTION_NAME)
-export const commentsCollection: Collection<any> = db.collection<any>(SETTINGS.COMMENTS_COLLECTION_NAME)
+export const commentsCollection: Collection<CommentsEntityModel> = db.collection<CommentsEntityModel>(SETTINGS.COMMENTS_COLLECTION_NAME)
 
 // проверка подключения к бд
 export const connectToDB = async () => {

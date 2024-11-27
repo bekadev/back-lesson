@@ -51,8 +51,8 @@ export const postsRepository = {
 
 	},
 	async createCommentsForPost(comments: any): Promise<string> {
-		await postCollection.insertOne(comments);
-		return comments.id;
+		const result = await postCollection.insertOne(comments);
+		return result.insertedId.toString();
 	},
 	async getComments(blogId: string, pageNumber: number, pageSize: number, sortBy: string, sortDirection: 'desc' | 'asc') {
 		const posts = await commentsCollection
@@ -64,7 +64,7 @@ export const postsRepository = {
 
 		return posts.map(post => {
 			return {
-				id: post.id,
+				id: post._id.toString(),
 				content: post.content,
 				commentatorInfo: {
 					userId: post.commentatorInfo.userId,

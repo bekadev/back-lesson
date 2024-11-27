@@ -3,7 +3,8 @@ import {adminMiddleware} from "../../common/middleware/auth-middleware";
 import {inputCheckErrorsMiddleware} from "../../common/middleware/input-check-errors-middleware";
 import {postControllers} from "../../features/posts/controllers";
 import {accessTokenGuard} from "../auth/guards/access.token.guard";
-import {postValidators, contentValidator,} from '../posts/middlewares/postValidators'
+import {commentsContentValidator} from "../comments/middlewares/commentsValidators";
+import {postValidators,} from '../posts/middlewares/postValidators'
 
 export const postsRouter = Router()
 
@@ -15,6 +16,6 @@ postsRouter.put('/:id', adminMiddleware, ...postValidators, postControllers.putP
 
 postsRouter.post('/:id/comments',
 	accessTokenGuard,
-	contentValidator,
+	commentsContentValidator,
 	inputCheckErrorsMiddleware, postControllers.createCommentsForPostController);
 postsRouter.get('/:id/comments', postControllers.getCommentsForPostController);

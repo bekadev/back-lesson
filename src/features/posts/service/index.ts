@@ -1,4 +1,4 @@
-import {ObjectId, WithId} from "mongodb";
+import {WithId} from "mongodb";
 import type {
 	CommentsInputModel,
 	CommentsViewModel,
@@ -84,7 +84,7 @@ export const postsService = {
 		if (!postExists) return null;
 
 		const newComments = {
-			id: ObjectId.toString(),
+			// id: ObjectId.toString(),
 			content: comments.content,
 			commentatorInfo: {
 				userId: "",
@@ -94,15 +94,7 @@ export const postsService = {
 		};
 
 		const isCreated = await postsRepository.createCommentsForPost(newComments);
-		return isCreated ? {
-			id: newComments.id,
-			content: newComments.content,
-			commentatorInfo: {
-				userId: newComments.commentatorInfo.userId,
-				userLogin: newComments.commentatorInfo.userLogin
-			},
-			createdAt: newComments.createdAt
-		} : null;
+		return isCreated ? this.mapComments({...newComments, id: isCreated}) : null;
 	},
 	async getComments(postId: string, pageNumber: number, pageSize: number, sortBy: string, sortDirection: 'desc' | 'asc'): Promise<CommentsPaginationViewModel> {
 		const posts = await postsRepository.getComments(postId, pageNumber, pageSize, sortBy, sortDirection);
@@ -115,6 +107,18 @@ export const postsService = {
 			items: posts,
 		};
 	},
+	mapComments(comment: any & { id: string }): any | null {
+		return {
+			id: comment.id,
+			content: comment.content,
+			commentatorInfo: {
+				userId: comment.commentatorInfo.userId,
+				userLogin: comment.commentatorInfo.userLogin
+			},
+			createdAt: comment.createdAt
+		};
+	},
+
 	map(post: WithId<PostDbType>): PostViewModel {
 		return {
 			id: post._id.toString(),

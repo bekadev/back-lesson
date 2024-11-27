@@ -4,6 +4,9 @@ export type CommentsInputModel = {
 
 export type CommentsViewModel = {
 	id: string
+} & CommentsEntityModel
+
+export type CommentsEntityModel = {
 	content: string
 	commentatorInfo: CommentatorInfo
 	createdAt?: string
