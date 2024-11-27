@@ -25,12 +25,6 @@ export const usersQwRepository = {
 					}
 				}]
 		};
-		// if (searchLoginTerm) {
-		// 	loginAndEmailFilter.login = {$regex: searchLoginTerm, $options: "i"};
-		// }
-		// if (searchEmailTerm) {
-		// 	loginAndEmailFilter.email = {$regex: searchEmailTerm, $options: "i"};
-		// }
 
 		const totalCount = await usersCollection.countDocuments(loginAndEmailFilter);
 

@@ -1,0 +1,1 @@
+export type WithStringId<T> = T & { id: string }

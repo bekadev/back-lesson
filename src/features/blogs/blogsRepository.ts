@@ -1,5 +1,6 @@
 import {ObjectId, type WithId} from "mongodb";
 import type {BlogViewModel, BlogEntityModel} from "../../common/input-output-types/blogs-types";
+import type {WithStringId} from "../../common/types/utils";
 import {BlogDbType} from "../../db/blog-db-type";
 import {blogCollection, postCollection} from "../../db/mongo-db";
 import type {PostDbType} from "../../db/post-db-type";
@@ -63,11 +64,11 @@ export const blogsRepository = {
 		return !!result.modifiedCount;
 	},
 	async createPostForBlog(post: PostDbType): Promise<string> {
-		await postCollection.insertOne(post);
-		return post.id;
+		const result = await postCollection.insertOne(post);
+		return result.insertedId.toString();
 	},
 
-	async getPostsForBlog(blogId: string, pageNumber: number, pageSize: number, sortBy: string, sortDirection: 'desc' | 'asc'): Promise<PostDbType[]> {
+	async getPostsForBlog(blogId: string, pageNumber: number, pageSize: number, sortBy: string, sortDirection: 'desc' | 'asc'): Promise<WithStringId<PostDbType>[]> {
 		const posts = await postCollection
 		.find({blogId})
 		.skip((pageNumber - 1) * pageSize)
@@ -75,9 +76,9 @@ export const blogsRepository = {
 		.sort({[sortBy]: sortDirection === 'asc' ? 1 : -1})
 		.toArray();
 
-		return posts.map(post => {
+		return posts.map((post: WithId<PostDbType>) => {
 			return {
-				id: post.id,
+				id: post._id.toString(),
 				title: post.title,
 				shortDescription: post.shortDescription,
 				content: post.content,

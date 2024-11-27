@@ -1,4 +1,4 @@
-import {ObjectId} from "mongodb";
+import {ObjectId, WithId} from "mongodb";
 import type {
 	CommentsInputModel,
 	CommentsViewModel,
@@ -17,7 +17,6 @@ export const postsService = {
 	async create(post: PostInputModel): Promise<PostViewModel | null> {
 		const blog = await blogsRepository.find(post.blogId)
 		const newPost: PostDbType = {
-			id: new Date().toISOString() + Math.random(),
 			title: post.title,
 			content: post.content,
 			shortDescription: post.shortDescription,
@@ -27,18 +26,13 @@ export const postsService = {
 		}
 
 		const newPostId = await postsRepository.create(newPost)
-		const createdPost = await this.find(newPostId);
+		const createdPost = await postsRepository.find(newPostId);
 		return createdPost ? this.map(createdPost) : null;
 	},
-	async find(id: string): Promise<PostDbType | null> {
-		return await postsRepository.find(id)
+	async find(id: string): Promise<PostViewModel | null> {
+		const result = await postsRepository.find(id)
+		return result ? this.map(result) : null;
 	},
-	// async findAndMap(id: string): Promise<PostViewModel | undefined> {
-	// 	const post = await this.find(id)! // ! используем этот метод если проверили существование
-	// 	if (!post) return undefined
-	//
-	// 	return this.map(post)
-	// },
 	async getAll(
 		pageNumber: number,
 		pageSize: number,
@@ -57,7 +51,7 @@ export const postsService = {
 			page: pageNumber,
 			pageSize: pageSize,
 			totalCount: postsCount,
-			items: posts.map(p => this.map(p))
+			items: posts
 		}
 	},
 	async del(id: string): Promise<boolean> {
@@ -67,7 +61,7 @@ export const postsService = {
 		const blog = await blogsRepository.find(post.blogId);
 		if (!blog) return null;
 
-		const existingPost = await this.find(id)
+		const existingPost = await postsRepository.find(id)
 		if (!existingPost) return null;
 
 		const updatedPost = {
@@ -79,7 +73,11 @@ export const postsService = {
 		};
 
 		const result = await postsRepository.put(updatedPost, id)
-		return result ? this.map(result) : null;
+		if (result) {
+			return this.map(updatedPost)
+		} else {
+			throw new Error()
+		}
 	},
 	async createCommentsForPost(postId: string, comments: CommentsInputModel): Promise<CommentsViewModel | null> {
 		const postExists = await this.find(postId);
@@ -117,9 +115,9 @@ export const postsService = {
 			items: posts,
 		};
 	},
-	map(post: PostDbType) {
-		const postForOutput: PostViewModel = {
-			id: post.id,
+	map(post: WithId<PostDbType>): PostViewModel {
+		return {
+			id: post._id.toString(),
 			title: post.title,
 			shortDescription: post.shortDescription,
 			content: post.content,
@@ -127,6 +125,5 @@ export const postsService = {
 			blogName: post.blogName,
 			createdAt: post.createdAt,
 		}
-		return postForOutput
 	},
 }

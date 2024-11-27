@@ -1,5 +1,4 @@
-import type {WithId} from "mongodb";
-import {randomUUID} from "node:crypto";
+import {type WithId} from "mongodb";
 import type {
 	BlogInputModel,
 	BlogViewModel,
@@ -17,7 +16,6 @@ import {blogsRepository} from "../blogsRepository";
 export const blogsService = {
 	async create(blog: BlogInputModel): Promise<BlogViewModel | null> {
 		const newBlog: BlogDbType = {
-
 			name: blog.name,
 			description: blog.description,
 			websiteUrl: blog.websiteUrl,
@@ -86,7 +84,6 @@ export const blogsService = {
 		if (!blogExists) return null;
 
 		const newPost: PostDbType = {
-			id: randomUUID(),
 			blogId: blogId,
 			title: post.title,
 			content: post.content,
@@ -96,7 +93,7 @@ export const blogsService = {
 		};
 
 		const postId = await blogsRepository.createPostForBlog(newPost);
-		return postId ? this.mapPost(newPost) : null;
+		return postId ? this.mapPost({...newPost, id: postId}) : null;
 	},
 
 	async getPostsForBlog(blogId: string, pageNumber: number, pageSize: number, sortBy: string, sortDirection: 'desc' | 'asc'): Promise<PostsPaginationViewModel> {
@@ -111,7 +108,7 @@ export const blogsService = {
 		};
 	},
 
-	mapPost(post: PostDbType): PostViewModel | null {
+	mapPost(post: PostDbType & { id: string }): PostViewModel | null {
 		return {
 			id: post.id,
 			blogId: post.blogId,
@@ -123,7 +120,6 @@ export const blogsService = {
 		};
 	},
 
-	// Mapping logic (from DbType to ViewModel)
 	map(blog: WithId<BlogDbType>): BlogViewModel {
 		return {
 			id: blog._id.toString(),

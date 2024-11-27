@@ -2,12 +2,8 @@ import {Router} from 'express'
 import {adminMiddleware} from "../../common/middleware/auth-middleware";
 import {inputCheckErrorsMiddleware} from "../../common/middleware/input-check-errors-middleware";
 import {postControllers} from "../../features/posts/controllers";
-import {
-	postValidators,
-	titleValidator,
-	shortDescriptionValidator,
-	contentValidator,
-} from '../posts/middlewares/postValidators'
+import {accessTokenGuard} from "../auth/guards/access.token.guard";
+import {postValidators, contentValidator,} from '../posts/middlewares/postValidators'
 
 export const postsRouter = Router()
 
@@ -18,9 +14,7 @@ postsRouter.delete('/:id', adminMiddleware, postControllers.delPostController)
 postsRouter.put('/:id', adminMiddleware, ...postValidators, postControllers.putPostController)
 
 postsRouter.post('/:id/comments',
-	adminMiddleware,
-	titleValidator,
-	shortDescriptionValidator,
+	accessTokenGuard,
 	contentValidator,
 	inputCheckErrorsMiddleware, postControllers.createCommentsForPostController);
 postsRouter.get('/:id/comments', postControllers.getCommentsForPostController);

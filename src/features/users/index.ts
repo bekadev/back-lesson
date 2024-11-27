@@ -6,6 +6,7 @@ import type {IPagination} from "../../common/types/pagination";
 import type {RequestWithQuery, RequestWithBody, RequestWithParams} from "../../common/types/requests";
 import {sortQueryFieldsUtil} from "../../common/utils/sortQueryFields.util";
 import {pageNumberValidation} from "../../common/validation/sorting.pagination.validation";
+import {baseAuthGuard} from "../auth/guards/base.auth.guard";
 import {emailValidation} from "./middlewares/email.validation";
 import {loginValidation} from "./middlewares/login.validation";
 import {passwordValidation} from "./middlewares/password.validation";
@@ -22,6 +23,7 @@ export const usersRouter = Router()
 usersRouter.get(
 	"/",
 	adminMiddleware,
+	baseAuthGuard,
 	pageNumberValidation,
 	async (
 		req: RequestWithQuery<UsersQueryFieldsType>,
@@ -52,6 +54,7 @@ usersRouter.get(
 usersRouter.post(
 	"/",
 	adminMiddleware,
+	baseAuthGuard,
 	passwordValidation,
 	loginValidation,
 	emailValidation,
