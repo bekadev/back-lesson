@@ -11,8 +11,21 @@ export const commentsService = {
 	async del(id: string): Promise<boolean> {
 		return await commentsRepository.del(id);
 	},
-	async put(post: any, id: string) {
-		return 1
+	async put(comment: any, id: string): Promise<{ content: string } | null> {
+		const existingComment = await commentsRepository.find(id);
+		if (!existingComment) return null;
+
+		const updatedComment = {
+			...existingComment,
+			content: comment.content
+		};
+
+		const result = await commentsRepository.put(updatedComment, id);
+		if (result) {
+			return this.map(updatedComment)
+		} else {
+			throw new Error()
+		}
 	},
 	map(comment: WithId<CommentsEntityModel>): CommentsViewModel {
 		return {

@@ -45,7 +45,7 @@ export const postsService = {
 			sortBy,
 			sortDirection,
 		)
-		const postsCount = await postsRepository.getBlogsCount()
+		const postsCount = await postsRepository.getPostsCount()
 		return {
 			pagesCount: Math.ceil(postsCount / pageSize),
 			page: pageNumber,
@@ -79,32 +79,32 @@ export const postsService = {
 			throw new Error()
 		}
 	},
-	async createCommentsForPost(postId: string, comments: CommentsInputModel): Promise<CommentsViewModel | null> {
+	async createCommentsForPost(postId: string, comments: CommentsInputModel, userId: string | undefined): Promise<CommentsViewModel | null> {
 		const postExists = await this.find(postId);
 		if (!postExists) return null;
 
 		const newComments = {
-			// id: ObjectId.toString(),
 			content: comments.content,
 			commentatorInfo: {
-				userId: "",
+				userId: userId,
 				userLogin: ""
 			},
-			createdAt: new Date().toISOString()
+			createdAt: new Date().toISOString(),
+			postId
 		};
 
 		const isCreated = await postsRepository.createCommentsForPost(newComments);
 		return isCreated ? this.mapComments({...newComments, id: isCreated}) : null;
 	},
 	async getComments(postId: string, pageNumber: number, pageSize: number, sortBy: string, sortDirection: 'desc' | 'asc'): Promise<CommentsPaginationViewModel> {
-		const posts = await postsRepository.getComments(postId, pageNumber, pageSize, sortBy, sortDirection);
-		const totalPostsCount = await postsRepository.getCommentsForPost(postId);
+		const comments = await postsRepository.getComments(postId, pageNumber, pageSize, sortBy, sortDirection);
+		const totalCommentsCount = await postsRepository.getCommentsForPost(postId);
 		return {
-			pagesCount: Math.ceil(totalPostsCount / pageSize),
+			pagesCount: Math.ceil(totalCommentsCount / pageSize),
 			page: pageNumber,
 			pageSize: pageSize,
-			totalCount: totalPostsCount,
-			items: posts,
+			totalCount: totalCommentsCount,
+			items: comments,
 		};
 	},
 	mapComments(comment: any & { id: string }): any | null {

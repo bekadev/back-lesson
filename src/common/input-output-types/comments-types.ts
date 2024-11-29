@@ -2,14 +2,15 @@ export type CommentsInputModel = {
 	content: string;
 }
 
-export type CommentsViewModel = {
+export type CommentsViewModel = Omit<{
 	id: string
-} & CommentsEntityModel
+} & CommentsEntityModel, 'postId'>
 
 export type CommentsEntityModel = {
 	content: string
 	commentatorInfo: CommentatorInfo
 	createdAt?: string
+	postId: string
 }
 
 export type CommentatorInfo = {

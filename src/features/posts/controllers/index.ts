@@ -1,6 +1,10 @@
 import {Request, Response} from "express";
 import {paginationQueries} from "../../../common/helpers/paginations_queries";
-import type {CommentsInputModel, CommentsViewModel} from "../../../common/input-output-types/comments-types";
+import type {
+	CommentsInputModel,
+	CommentsViewModel,
+	CommentsPaginationViewModel
+} from "../../../common/input-output-types/comments-types";
 import {
 	PostInputModel,
 	PostViewModel,
@@ -51,12 +55,14 @@ export const postControllers = {
 	createCommentsForPostController: async (req: Request<{
 		id: string
 	}, any, CommentsInputModel>, res: Response<CommentsViewModel>) => {
-		const postId = await postsService.find(req.params.id)
-		if (!postId) {
+		const postExists = await postsService.find(req.params.id)
+		if (!postExists) {
 			return res.sendStatus(404);
 		}
 
-		const comments = await postsService.createCommentsForPost(req.params.id, req.body)
+		const userId = req.user?.id
+
+		const comments = await postsService.createCommentsForPost(req.params.id, req.body, userId)
 
 		if (comments) {
 			return res.status(201).json(comments);
@@ -64,14 +70,14 @@ export const postControllers = {
 		return res.sendStatus(400);
 
 	},
-	getCommentsForPostController: async (req: Request<{ id: string }>, res: Response) => {
-		const postId = await postsService.find(req.params.id)
-		if (!postId) {
+	getCommentsForPostController: async (req: Request<{ id: string }>, res: Response<CommentsPaginationViewModel>) => {
+		const postExists = await postsService.find(req.params.id)
+		if (!postExists) {
 			return res.sendStatus(404);
 		}
 
 		const {pageNumber, pageSize, sortBy, sortDirection} = paginationQueries(req);
-		const posts = await postsService.getComments(req.params.id, pageNumber, pageSize, sortBy, sortDirection);
-		return res.status(200).json(posts);
+		const comments = await postsService.getComments(req.params.id, pageNumber, pageSize, sortBy, sortDirection);
+		return res.status(200).json(comments);
 	},
 }

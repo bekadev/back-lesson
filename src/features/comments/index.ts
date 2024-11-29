@@ -7,4 +7,4 @@ export const commentsRouter = Router()
 
 commentsRouter.get('/:id', commentsControllers.findCommentsController)
 commentsRouter.delete('/:id', accessTokenGuard, commentsControllers.delCommentsController)
-commentsRouter.put('/:id', accessTokenGuard, ...commentsValidators, commentsControllers.putCommentsController)
+commentsRouter.put('/:id', accessTokenGuard, ...commentsValidators, ...commentsValidators, commentsControllers.putCommentsController)

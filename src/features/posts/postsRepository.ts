@@ -1,4 +1,5 @@
 import {type WithId, ObjectId} from "mongodb";
+import type {CommentsEntityModel} from "../../common/input-output-types/comments-types";
 import type {PostEntityModel, PostViewModel} from "../../common/input-output-types/posts-types";
 import {postCollection, commentsCollection} from "../../db/mongo-db";
 import {PostDbType} from "../../db/post-db-type";
@@ -9,7 +10,7 @@ export const postsRepository = {
 		return result.insertedId.toString()
 	},
 	async find(id: string): Promise<WithId<PostEntityModel> | null> {
-		return await postCollection.findOne({_id: new ObjectId(id)})
+		return postCollection.findOne({_id: new ObjectId(id)})
 	},
 	async getAll(
 		pageNumber: number,
@@ -36,7 +37,7 @@ export const postsRepository = {
 			}
 		});
 	},
-	async getBlogsCount(): Promise<number> {
+	async getPostsCount(): Promise<number> {
 		const filter: any = {}
 		filter.title = {$regex: '', $options: 'i'};
 		return postCollection.countDocuments(filter)
@@ -51,26 +52,26 @@ export const postsRepository = {
 
 	},
 	async createCommentsForPost(comments: any): Promise<string> {
-		const result = await postCollection.insertOne(comments);
+		const result = await commentsCollection.insertOne(comments);
 		return result.insertedId.toString();
 	},
-	async getComments(blogId: string, pageNumber: number, pageSize: number, sortBy: string, sortDirection: 'desc' | 'asc') {
-		const posts = await commentsCollection
-		.find({blogId})
+	async getComments(postId: string, pageNumber: number, pageSize: number, sortBy: string, sortDirection: 'desc' | 'asc') {
+		const comments = await commentsCollection
+		.find({postId})
 		.skip((pageNumber - 1) * pageSize)
 		.limit(pageSize)
 		.sort({[sortBy]: sortDirection === 'asc' ? 1 : -1})
 		.toArray();
 
-		return posts.map(post => {
+		return comments.map((comment: WithId<CommentsEntityModel>) => {
 			return {
-				id: post._id.toString(),
-				content: post.content,
+				id: comment._id.toString(),
+				content: comment.content,
 				commentatorInfo: {
-					userId: post.commentatorInfo.userId,
-					userLogin: post.commentatorInfo.userLogin
+					userId: comment.commentatorInfo.userId,
+					userLogin: comment.commentatorInfo.userLogin
 				},
-				createdAt: post.createdAt
+				createdAt: comment.createdAt
 			}
 		})
 	},
