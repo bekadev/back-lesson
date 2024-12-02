@@ -1,8 +1,3 @@
-export interface IUserDB {
-	login: string,
-	email: string,
-	passwordHash: string,
-	createdAt: Date,
-}
+import { User } from "../domain/user.entity";
 
-
+export interface IUserDB extends User {}
