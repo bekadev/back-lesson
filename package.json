@@ -8,7 +8,8 @@
     "dev": "yarn nodemon --inspect dist/index.js",
     "jest": "jest -i",
     "jest:coverage": "jest -i --coverage",
-    "serveo:run": "ssh -R 80:localhost:3000 serveo.net"
+    "serveo:run": "ssh -R 80:localhost:3000 serveo.net",
+    "nokey:run": "ssh -R 80:localhost:3000 nokey@localhost.run"
   },
   "dependencies": {
     "@types/bcrypt": "^5.0.2",
@@ -22,10 +23,11 @@
     "express": "^4.19.2",
     "express-validator": "^7.2.0",
     "jsonwebtoken": "^9.0.2",
-    "nodemailer": "^6.9.8",
-    "mongodb": "^6.9.0"
+    "mongodb": "^6.9.0",
+    "nodemailer": "^6.9.8"
   },
   "devDependencies": {
+    "@types/cookie-parser": "^1.4.8",
     "@types/cors": "^2.8.17",
     "@types/express": "^4.17.21",
     "@types/jest": "^29.5.12",

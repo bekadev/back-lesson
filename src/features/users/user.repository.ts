@@ -21,6 +21,11 @@ export const usersRepository = {
       $or: [{ email: loginOrEmail }, { login: loginOrEmail }],
     });
   },
+  async findUserByConfirmationCode(emailConfirmationCode: string) {
+    return usersCollection.findOne({
+      "emailConfirmation.confirmationCode": emailConfirmationCode,
+    });
+  },
   async doesExistById(id: string): Promise<boolean> {
     if (!this._checkObjectId(id)) return false;
     const isUser = await usersCollection.findOne({ _id: new ObjectId(id) });
@@ -34,6 +39,21 @@ export const usersRepository = {
       $or: [{ email }, { login }],
     });
     return !!user;
+  },
+  async updateConfirmation(id: ObjectId) {
+    let result = await usersCollection.updateOne(
+      { _id: new ObjectId(id) },
+      { $set: { confirmed: true } },
+    );
+    return result.modifiedCount === 1;
+  },
+  async update(user: WithId<User>): Promise<boolean> {
+    const { _id, ...updateFields } = user;
+    const result = await usersCollection.updateOne(
+      { _id: new ObjectId(_id) },
+      { $set: updateFields },
+    );
+    return result.modifiedCount === 1;
   },
   _checkObjectId(id: string): boolean {
     return ObjectId.isValid(id);

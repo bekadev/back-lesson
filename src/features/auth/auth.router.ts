@@ -1,4 +1,8 @@
-import { Request, Response, Router } from "express";
+import { randomUUID } from "crypto";
+import { Response, Router } from "express";
+import { emailExamples } from "../../common/adapters/emailExamples";
+import { nodemailerService } from "../../common/adapters/nodemailer.service";
+import { inputCheckErrorsMiddleware } from "../../common/middleware/input-check-errors-middleware";
 import { routersPaths } from "../../common/path/paths";
 import { ResultStatus } from "../../common/result/resultCode";
 import { resultCodeToHttpException } from "../../common/result/resultCodeToHttpException";
@@ -9,14 +13,19 @@ import type {
   RequestWithUserId,
 } from "../../common/types/requests";
 import { inputValidation } from "../../common/validation/input.validation";
-import { emailValidation } from "../users/middlewares/email.validation";
+import {
+  emailValidation,
+  emailResendValidation,
+} from "../users/middlewares/email.validation";
 import { loginOrEmailValidation } from "../users/middlewares/login.or.emaol.validation";
 import { loginValidation } from "../users/middlewares/login.validation";
 import { passwordValidation } from "../users/middlewares/password.validation";
 import { CreateUserInputDto } from "../users/types/create.user.input.dto";
 import { usersQwRepository } from "../users/user.query.repository";
+import { usersRepository } from "../users/user.repository";
 import { authService } from "./auth.service";
 import { accessTokenGuard } from "./guards/access.token.guard";
+import { codeValidation } from "./middlewares/code.validation";
 import { LoginInputDto } from "./types/login.input.dto";
 
 export const authRouter = Router();
@@ -62,36 +71,106 @@ authRouter.post(
   passwordValidation,
   loginValidation,
   emailValidation,
-  inputValidation,
+  inputCheckErrorsMiddleware,
   async (req: RequestWithBody<CreateUserInputDto>, res: Response) => {
     const { login, email, password } = req.body;
 
     const result = await authService.registerUser(login, password, email);
     if (result.status === ResultStatus.Success) {
-      return res.send(HttpStatuses.Created).json(result);
+      return res.sendStatus(HttpStatuses.NoContent);
     }
-    return res.sendStatus(HttpStatuses.Created);
+    return res.sendStatus(HttpStatuses.NotFound);
   },
 );
 
 authRouter.post(
   routersPaths.auth.registrationConfirmation,
-  inputValidation,
-  async (req: Request, res: Response) => {
+  codeValidation,
+  inputCheckErrorsMiddleware,
+  async (req: RequestWithBody<{ code: string }>, res: Response) => {
     const { code } = req.body;
-    //some logic
 
-    return res.sendStatus(HttpStatuses.Created);
+    try {
+      const user = await usersRepository.findUserByConfirmationCode(code);
+
+      if (!user) {
+        return res.status(HttpStatuses.BadRequest).send({
+          errorsMessages: [
+            { field: "code", message: "Invalid confirmation code" },
+          ],
+        });
+      }
+
+      if (user.emailConfirmation.isConfirmed) {
+        return res.status(HttpStatuses.BadRequest).send({
+          errorsMessages: [
+            { field: "code", message: "Email is already confirmed" },
+          ],
+        });
+      }
+
+      user.emailConfirmation.isConfirmed = true;
+
+      const isUpdated = await usersRepository.update(user);
+
+      if (!isUpdated) {
+        return res.status(HttpStatuses.ServerError).send({
+          errorsMessages: [
+            { field: "code", message: "Failed to confirm email" },
+          ],
+        });
+      }
+
+      return res.sendStatus(HttpStatuses.NoContent);
+    } catch (error) {
+      console.error("Error during registration confirmation:", error);
+      return res.sendStatus(HttpStatuses.ServerError);
+    }
   },
 );
 
 authRouter.post(
   routersPaths.auth.registrationEmailResending,
-  inputValidation,
-  async (req: Request, res: Response) => {
+  emailResendValidation,
+  inputCheckErrorsMiddleware,
+  async (req: RequestWithBody<{ email: string }>, res: Response) => {
     const { email } = req.body;
-    //some logic
 
-    return res.sendStatus(HttpStatuses.Created);
+    try {
+      const user = await usersRepository.findByLoginOrEmail(email);
+      if (!user || user.emailConfirmation.isConfirmed) {
+        return res.status(HttpStatuses.BadRequest).send({
+          errorsMessages: [
+            {
+              field: "email",
+              message: "Email is already confirmed or invalid",
+            },
+          ],
+        });
+      }
+
+      const newCode = randomUUID();
+      user.emailConfirmation.confirmationCode = newCode;
+
+      const isUpdated = await usersRepository.update(user);
+      if (!isUpdated) {
+        return res.status(HttpStatuses.ServerError).send({
+          errorsMessages: [
+            { field: "email", message: "Failed to resend confirmation email" },
+          ],
+        });
+      }
+
+      await nodemailerService.sendEmail(
+        user.email,
+        newCode,
+        emailExamples.registrationEmail,
+      );
+
+      return res.sendStatus(HttpStatuses.NoContent);
+    } catch (error) {
+      console.error("Error during email resending:", error);
+      return res.sendStatus(HttpStatuses.ServerError);
+    }
   },
 );

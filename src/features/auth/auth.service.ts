@@ -100,8 +100,14 @@ export const authService = {
     };
   },
 
-  async confirmEmail(code: string): Promise<Result<any>> {
-    //some logic
+  async confirmEmail(code: string): Promise<Result<any> | boolean> {
+    const user = await usersRepository.findUserByConfirmationCode(code);
+    if (!user)
+      return {
+        status: ResultStatus.NotFound,
+        data: null,
+        extensions: [],
+      };
 
     const isUuid = new RegExp(
       /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i,
@@ -114,6 +120,12 @@ export const authService = {
         data: null,
         extensions: [{ field: "code", message: "Incorrect code" }],
       };
+    }
+
+    if (user.emailConfirmation.confirmationCode !== code) return false;
+    if (user.emailConfirmation.isConfirmed) return false;
+    if (user.emailConfirmation.expirationDate > new Date()) {
+      return await usersRepository.updateConfirmation(user._id);
     }
 
     return {
