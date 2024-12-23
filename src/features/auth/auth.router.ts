@@ -26,6 +26,7 @@ import { CreateUserInputDto } from "../users/types/create.user.input.dto";
 import { usersQwRepository } from "../users/user.query.repository";
 import { usersRepository } from "../users/user.repository";
 import { authService } from "./auth.service";
+import { blacklistRepository } from "./blacklist.repository";
 import { accessTokenGuard } from "./guards/access.token.guard";
 import { refreshTokenGuard } from "./guards/refresh.token.guard";
 import { codeValidation } from "./middlewares/code.validation";
@@ -176,7 +177,7 @@ authRouter.post(
     try {
       const { refreshToken } = req.cookies;
 
-      await usersRepository.removeToken(refreshToken);
+      await blacklistRepository.addToken(refreshToken);
 
       res.clearCookie("refreshToken");
       return res.sendStatus(HttpStatuses.NoContent);
@@ -193,7 +194,7 @@ authRouter.get(
     const userId = req.user?.id as string;
 
     if (!userId) return res.sendStatus(HttpStatuses.Unauthorized);
-    const me = await usersQwRepository.findById(userId);
+    const me = await usersQwRepository.findByIdMe(userId);
 
     return res.status(HttpStatuses.Success).send(me);
   },
@@ -213,6 +214,8 @@ authRouter.post(
       const userId = decodedToken?.userId!;
       const newAccessToken = await jwtService.createToken(userId);
       const newRefreshToken = await jwtService.createRefreshToken(userId);
+
+      await blacklistRepository.addToken(refreshToken);
 
       res.cookie("refreshToken", newRefreshToken, {
         httpOnly: true,

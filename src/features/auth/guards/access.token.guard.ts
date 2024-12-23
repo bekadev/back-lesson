@@ -14,7 +14,7 @@ export const accessTokenGuard = async (
   const result = await authService.checkAccessToken(req.headers.authorization);
 
   if (result.status === ResultStatus.Success) {
-    req.user = result.data!;
+    req.user = { id: result.data! };
     return next();
   }
   return res.sendStatus(HttpStatuses.Unauthorized);

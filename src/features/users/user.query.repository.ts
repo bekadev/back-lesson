@@ -8,11 +8,33 @@ import { IUserView } from "./types/user.view.interface";
 
 export const usersQwRepository = {
   async findAllUsers(
-    sortQueryDto: SortQueryFilterType,
+    sortQueryDto: SortQueryFilterType & {
+      searchLoginTerm?: string;
+      searchEmailTerm?: string;
+    },
   ): Promise<IPagination<IUserView[]>> {
-    const { sortBy, sortDirection, pageSize, pageNumber } = sortQueryDto;
+    const {
+      sortBy,
+      sortDirection,
+      pageSize,
+      pageNumber,
+      searchLoginTerm,
+      searchEmailTerm,
+    } = sortQueryDto;
 
-    const loginAndEmailFilter = {};
+    const loginAndEmailFilter: any = {
+      $or: [
+        {
+          login: { $regex: searchLoginTerm ?? "", $options: "i" },
+        },
+        {
+          email: {
+            $regex: searchEmailTerm ?? "",
+            $options: "i",
+          },
+        },
+      ],
+    };
 
     const totalCount =
       await usersCollection.countDocuments(loginAndEmailFilter);
@@ -37,6 +59,11 @@ export const usersQwRepository = {
     const user = await usersCollection.findOne({ _id: new ObjectId(id) });
     return user ? this._getInView(user) : null;
   },
+  async findByIdMe(id: string) {
+    if (!this._checkObjectId(id)) return null;
+    const user = await usersCollection.findOne({ _id: new ObjectId(id) });
+    return user ? this._getInViewMe(user) : null;
+  },
   _getInView(user: WithId<IUserDB>): IUserView {
     return {
       id: user._id.toString(),
@@ -45,6 +72,14 @@ export const usersQwRepository = {
       createdAt: user.createdAt.toISOString(),
     };
   },
+  _getInViewMe(user: WithId<IUserDB>) {
+    return {
+      userId: user._id.toString(),
+      email: user.email,
+      login: user.login,
+    };
+  },
+
   _checkObjectId(id: string): boolean {
     return ObjectId.isValid(id);
   },

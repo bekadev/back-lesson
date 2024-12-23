@@ -145,7 +145,7 @@ export const authService = {
     };
   },
 
-  async checkAccessToken(authHeader: string): Promise<Result<IdType | null>> {
+  async checkAccessToken(authHeader: string) {
     const [type, token] = authHeader.split(" ");
 
     const result = await jwtService.verifyToken(token, appConfig.AC_SECRET);
@@ -161,7 +161,7 @@ export const authService = {
 
     return {
       status: ResultStatus.Success,
-      data: null,
+      data: result.userId,
       extensions: [],
     };
   },
