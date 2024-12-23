@@ -3,16 +3,17 @@ import { HttpStatuses } from "../../../common/types/httpStatuses";
 import { ResultStatus } from "../../../common/types/resultCode";
 import { authService } from "../auth.service";
 
-export const accessTokenGuard = async (
+export const refreshTokenGuard = async (
   req: Request,
   res: Response,
   next: NextFunction,
 ) => {
-  if (!req.headers.authorization)
-    return res.sendStatus(HttpStatuses.Unauthorized);
+  if (!req.cookies) return res.sendStatus(HttpStatuses.Unauthorized);
 
-  const result = await authService.checkAccessToken(req.headers.authorization);
-
+  const result = await authService.checkRefreshToken(req.cookies.refreshToken);
+  console.log(req.headers.cookie);
+  console.log(req.cookies, " cookies");
+  console.log("result", result);
   if (result.status === ResultStatus.Success) {
     req.user = result.data!;
     return next();

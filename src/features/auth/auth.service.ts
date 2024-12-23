@@ -3,8 +3,10 @@ import { bcryptService } from "../../common/adapters/bcrypt.service";
 import { emailExamples } from "../../common/adapters/emailExamples";
 import { jwtService } from "../../common/adapters/jwt.service";
 import { nodemailerService } from "../../common/adapters/nodemailer.service";
+import { appConfig } from "../../common/config/config";
 import { Result } from "../../common/result/result.type";
 import { ResultStatus } from "../../common/result/resultCode";
+import type { IdType } from "../../common/types/id";
 import { User } from "../users/domain/user.entity";
 import type { IUserDB } from "../users/types/user.db.interface";
 import { usersRepository } from "../users/user.repository";
@@ -100,6 +102,10 @@ export const authService = {
     };
   },
 
+  async generateRefreshToken(userId: string): Promise<string> {
+    return jwtService.createRefreshToken(userId);
+  },
+
   async confirmEmail(code: string): Promise<Result<any> | boolean> {
     const user = await usersRepository.findUserByConfirmationCode(code);
     if (!user)
@@ -126,6 +132,46 @@ export const authService = {
     if (user.emailConfirmation.isConfirmed) return false;
     if (user.emailConfirmation.expirationDate > new Date()) {
       return await usersRepository.updateConfirmation(user._id);
+    }
+
+    return {
+      status: ResultStatus.Success,
+      data: null,
+      extensions: [],
+    };
+  },
+
+  async checkAccessToken(authHeader: string): Promise<Result<IdType | null>> {
+    const [type, token] = authHeader.split(" ");
+
+    const result = await jwtService.verifyToken(token, appConfig.AC_SECRET);
+
+    if (!result) {
+      return {
+        status: ResultStatus.Unauthorized,
+        errorMessage: "Unauthorized",
+        data: null,
+        extensions: [{ field: null, message: "Havent payload" }],
+      };
+    }
+
+    return {
+      status: ResultStatus.Success,
+      data: null,
+      extensions: [],
+    };
+  },
+
+  async checkRefreshToken(token: string): Promise<Result<IdType | null>> {
+    const result = await jwtService.decodeToken(token);
+
+    if (!result) {
+      return {
+        status: ResultStatus.Unauthorized,
+        errorMessage: "Unauthorized",
+        data: null,
+        extensions: [{ field: null, message: "Havent payload" }],
+      };
     }
 
     return {

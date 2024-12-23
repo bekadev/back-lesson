@@ -1,6 +1,7 @@
 import { randomUUID } from "crypto";
 import { Response, Router } from "express";
 import { emailExamples } from "../../common/adapters/emailExamples";
+import { jwtService } from "../../common/adapters/jwt.service";
 import { nodemailerService } from "../../common/adapters/nodemailer.service";
 import { inputCheckErrorsMiddleware } from "../../common/middleware/input-check-errors-middleware";
 import { routersPaths } from "../../common/path/paths";
@@ -25,46 +26,11 @@ import { usersQwRepository } from "../users/user.query.repository";
 import { usersRepository } from "../users/user.repository";
 import { authService } from "./auth.service";
 import { accessTokenGuard } from "./guards/access.token.guard";
+import { refreshTokenGuard } from "./guards/refresh.token.guard";
 import { codeValidation } from "./middlewares/code.validation";
 import { LoginInputDto } from "./types/login.input.dto";
 
 export const authRouter = Router();
-
-authRouter.post(
-  routersPaths.auth.login,
-  passwordValidation,
-  loginOrEmailValidation,
-  inputValidation,
-  async (req: RequestWithBody<LoginInputDto>, res: Response) => {
-    const { loginOrEmail, password } = req.body;
-
-    const result = await authService.loginUser(loginOrEmail, password);
-
-    //TODO: replace with type guard
-    if (result.status !== ResultStatus.Success) {
-      return res
-        .status(resultCodeToHttpException(result.status))
-        .send(result.extensions);
-    }
-
-    return res
-      .status(HttpStatuses.Success)
-      .send({ accessToken: result.data!.accessToken });
-  },
-);
-
-authRouter.get(
-  routersPaths.auth.me,
-  accessTokenGuard,
-  async (req: RequestWithUserId<IdType>, res: Response) => {
-    const userId = req.user?.id as string;
-
-    if (!userId) return res.sendStatus(HttpStatuses.Unauthorized);
-    const me = await usersQwRepository.findById(userId);
-
-    return res.status(HttpStatuses.Success).send(me);
-  },
-);
 
 authRouter.post(
   routersPaths.auth.registration,
@@ -171,6 +137,104 @@ authRouter.post(
     } catch (error) {
       console.error("Error during email resending:", error);
       return res.sendStatus(HttpStatuses.ServerError);
+    }
+  },
+);
+
+authRouter.post(
+  routersPaths.auth.login,
+  passwordValidation,
+  loginOrEmailValidation,
+  inputValidation,
+  async (req: RequestWithBody<LoginInputDto>, res: Response) => {
+    const { loginOrEmail, password } = req.body;
+    const check = await authService.checkUserCredentials(
+      loginOrEmail,
+      password,
+    );
+    const result = await authService.loginUser(loginOrEmail, password);
+
+    if (result.status !== ResultStatus.Success) {
+      return res
+        .status(resultCodeToHttpException(result.status))
+        .send(result.extensions);
+    }
+
+    const accessToken = result.data!.accessToken;
+    const refreshToken = await authService.generateRefreshToken(
+      check.data!._id.toString(),
+    );
+
+    res.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      secure: true,
+      maxAge: 20 * 1000,
+      sameSite: "strict",
+    });
+
+    return res.status(HttpStatuses.Success).send({ accessToken });
+  },
+);
+
+authRouter.post(
+  routersPaths.auth.logout,
+  refreshTokenGuard,
+  async (req, res) => {
+    try {
+      const { refreshToken } = req.cookies;
+
+      await usersRepository.removeToken(refreshToken);
+
+      res.clearCookie("refreshToken");
+      return res.sendStatus(HttpStatuses.NoContent);
+    } catch (error) {
+      return res.sendStatus(HttpStatuses.ServerError);
+    }
+  },
+);
+
+authRouter.get(
+  routersPaths.auth.me,
+  accessTokenGuard,
+  async (req: RequestWithUserId<IdType>, res: Response) => {
+    const userId = req.user?.id as string;
+
+    if (!userId) return res.sendStatus(HttpStatuses.Unauthorized);
+    const me = await usersQwRepository.findById(userId);
+
+    return res.status(HttpStatuses.Success).send(me);
+  },
+);
+
+authRouter.post(
+  routersPaths.auth.refreshToken,
+  refreshTokenGuard,
+  async (req: RequestWithBody<{ refreshToken: string }>, res: Response) => {
+    try {
+      const { refreshToken } = req.cookies;
+      const decodedToken = await jwtService.decodeToken(
+        refreshToken,
+        // appConfig.RT_SECRET,
+      );
+
+      const userId = decodedToken?.userId!;
+      const newAccessToken = await jwtService.createToken(userId);
+      const newRefreshToken = await jwtService.createRefreshToken(userId);
+
+      res.cookie("refreshToken", newRefreshToken, {
+        httpOnly: true,
+        secure: true,
+        maxAge: 20 * 1000,
+        sameSite: "strict",
+      });
+
+      return res
+        .status(HttpStatuses.Success)
+        .send({ accessToken: newAccessToken });
+    } catch (error) {
+      return res.status(HttpStatuses.ServerError).send({
+        errorMessage: "Internal server error",
+      });
     }
   },
 );

@@ -55,6 +55,10 @@ export const usersRepository = {
     );
     return result.modifiedCount === 1;
   },
+  async removeToken(refreshToken: any) {
+    const tokenData = await usersCollection.deleteOne({ refreshToken });
+    return tokenData;
+  },
   _checkObjectId(id: string): boolean {
     return ObjectId.isValid(id);
   },
