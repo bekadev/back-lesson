@@ -3,6 +3,7 @@ import { Response, Router } from "express";
 import { emailExamples } from "../../common/adapters/emailExamples";
 import { jwtService } from "../../common/adapters/jwt.service";
 import { nodemailerService } from "../../common/adapters/nodemailer.service";
+import { appConfig } from "../../common/config/config";
 import { inputCheckErrorsMiddleware } from "../../common/middleware/input-check-errors-middleware";
 import { routersPaths } from "../../common/path/paths";
 import { ResultStatus } from "../../common/result/resultCode";
@@ -148,10 +149,6 @@ authRouter.post(
   inputValidation,
   async (req: RequestWithBody<LoginInputDto>, res: Response) => {
     const { loginOrEmail, password } = req.body;
-    const check = await authService.checkUserCredentials(
-      loginOrEmail,
-      password,
-    );
     const result = await authService.loginUser(loginOrEmail, password);
 
     if (result.status !== ResultStatus.Success) {
@@ -159,20 +156,16 @@ authRouter.post(
         .status(resultCodeToHttpException(result.status))
         .send(result.extensions);
     }
-
-    const accessToken = result.data!.accessToken;
-    const refreshToken = await authService.generateRefreshToken(
-      check.data!._id.toString(),
-    );
-
-    res.cookie("refreshToken", refreshToken, {
+    console.log("refrresh for cookie", result.data!.refreshToken);
+    res.cookie("refreshToken", result.data!.refreshToken, {
       httpOnly: true,
       secure: true,
-      maxAge: 20 * 1000,
-      sameSite: "strict",
+      sameSite: "lax",
     });
 
-    return res.status(HttpStatuses.Success).send({ accessToken });
+    return res
+      .status(HttpStatuses.Success)
+      .send({ accessToken: result.data!.accessToken });
   },
 );
 
@@ -212,9 +205,9 @@ authRouter.post(
   async (req: RequestWithBody<{ refreshToken: string }>, res: Response) => {
     try {
       const { refreshToken } = req.cookies;
-      const decodedToken = await jwtService.decodeToken(
+      const decodedToken = await jwtService.verifyToken(
         refreshToken,
-        // appConfig.RT_SECRET,
+        appConfig.RT_SECRET,
       );
 
       const userId = decodedToken?.userId!;

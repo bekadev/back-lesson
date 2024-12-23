@@ -10,8 +10,10 @@ export const refreshTokenGuard = async (
 ) => {
   if (!req.cookies) return res.sendStatus(HttpStatuses.Unauthorized);
 
+  console.log("req.cookies.refreshToken", req.cookies.refreshToken);
+
   const result = await authService.checkRefreshToken(req.cookies.refreshToken);
-  console.log(req.headers.cookie);
+  console.log("req.headers.cookie", req.headers.cookie);
   console.log(req.cookies, " cookies");
   console.log("result", result);
   if (result.status === ResultStatus.Success) {

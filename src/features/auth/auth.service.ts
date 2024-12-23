@@ -15,7 +15,7 @@ export const authService = {
   async loginUser(
     loginOrEmail: string,
     password: string,
-  ): Promise<Result<{ accessToken: string } | null>> {
+  ): Promise<Result<{ accessToken: string; refreshToken: string } | null>> {
     const result = await this.checkUserCredentials(loginOrEmail, password);
     //TODO replace with helper function
     if (result.status !== ResultStatus.Success)
@@ -30,9 +30,13 @@ export const authService = {
       result.data!._id.toString(),
     );
 
+    const refreshToken = await authService.generateRefreshToken(
+      result.data!._id.toString(),
+    );
+
     return {
       status: ResultStatus.Success,
-      data: { accessToken },
+      data: { accessToken, refreshToken },
       extensions: [],
     };
   },
@@ -163,7 +167,9 @@ export const authService = {
   },
 
   async checkRefreshToken(token: string): Promise<Result<IdType | null>> {
-    const result = await jwtService.decodeToken(token);
+    const result = await jwtService.verifyToken(token, appConfig.RT_SECRET);
+
+    console.log("result checkRefreshToken", result);
 
     if (!result) {
       return {

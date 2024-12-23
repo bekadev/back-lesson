@@ -4,12 +4,13 @@ import { appConfig } from "../config/config";
 export const jwtService = {
   async createToken(userId: string): Promise<string> {
     return jwt.sign({ userId }, appConfig.AC_SECRET, {
-      expiresIn: appConfig.AC_TIME,
+      expiresIn: `${appConfig.AC_TIME}s`,
     });
   },
   async createRefreshToken(userId: string): Promise<string> {
+    console.log("secret for create refToken", appConfig.RT_SECRET);
     return jwt.sign({ userId }, appConfig.RT_SECRET, {
-      expiresIn: appConfig.REFRESH_TIME,
+      expiresIn: `${appConfig.REFRESH_TIME}s`,
     });
   },
   async decodeToken(token: string): Promise<any> {
@@ -25,8 +26,10 @@ export const jwtService = {
     secret: string,
   ): Promise<{ userId: string } | null> {
     try {
+      console.log(`sercet for decode`, secret);
       return jwt.verify(token, secret) as { userId: string };
     } catch (error) {
+      console.log(error);
       console.error("Token verify some error");
       return null;
     }
