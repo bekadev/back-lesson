@@ -1,5 +1,8 @@
-import jwt from "jsonwebtoken";
+import jwt, { type JwtPayload } from "jsonwebtoken";
 import { appConfig } from "../config/config";
+import type { ResultType } from "../result/result.type";
+import { resultHelpers } from "../result/resultHelpers";
+import type { RefreshTokenPayload } from "../types/refreshToken";
 
 export const jwtService = {
   async createToken(userId: string): Promise<string> {
@@ -7,9 +10,9 @@ export const jwtService = {
       expiresIn: `${appConfig.AC_TIME}s`,
     });
   },
-  async createRefreshToken(userId: string): Promise<string> {
+  async createRefreshToken(userId: string, deviceId: string): Promise<string> {
     console.log("secret for create refToken", appConfig.RT_SECRET);
-    return jwt.sign({ userId }, appConfig.RT_SECRET, {
+    return jwt.sign({ userId, deviceId }, appConfig.RT_SECRET, {
       expiresIn: `${appConfig.REFRESH_TIME}s`,
     });
   },
@@ -24,14 +27,15 @@ export const jwtService = {
   async verifyToken(
     token: string,
     secret: string,
-  ): Promise<{ userId: string } | null> {
+  ): Promise<ResultType<RefreshTokenPayload | null>> {
     try {
-      console.log(`sercet for decode`, secret);
-      return jwt.verify(token, secret) as { userId: string };
-    } catch (error) {
-      console.log(error);
-      console.error("Token verify some error");
-      return null;
+      const result = jwt.verify(
+        token,
+        secret,
+      ) as JwtPayload as RefreshTokenPayload;
+      return resultHelpers.success(result);
+    } catch (e) {
+      return resultHelpers.unauthorized();
     }
   },
 };

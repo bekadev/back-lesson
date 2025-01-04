@@ -1,12 +1,16 @@
 import { WithId } from "mongodb";
+import { v4 as uuidv4 } from "uuid";
 import { bcryptService } from "../../common/adapters/bcrypt.service";
 import { emailExamples } from "../../common/adapters/emailExamples";
 import { jwtService } from "../../common/adapters/jwt.service";
 import { nodemailerService } from "../../common/adapters/nodemailer.service";
 import { appConfig } from "../../common/config/config";
-import { Result } from "../../common/result/result.type";
+import { ResultType } from "../../common/result/result.type";
 import { ResultStatus } from "../../common/result/resultCode";
+import { resultHelpers } from "../../common/result/resultHelpers";
 import type { IdType } from "../../common/types/id";
+import { deviceRepository } from "../session/session.repository";
+import type { SessionsDBModel } from "../session/session.types";
 import { User } from "../users/domain/user.entity";
 import type { IUserDB } from "../users/types/user.db.interface";
 import { usersRepository } from "../users/user.repository";
@@ -15,9 +19,15 @@ export const authService = {
   async loginUser(
     loginOrEmail: string,
     password: string,
-  ): Promise<Result<{ accessToken: string; refreshToken: string } | null>> {
+    ipDevice: string,
+    titleDevice: string = "Chrome",
+  ) {
     const result = await this.checkUserCredentials(loginOrEmail, password);
-    //TODO replace with helper function
+
+    if (!resultHelpers.isSuccess(result)) {
+      return resultHelpers.unauthorized();
+    }
+
     if (result.status !== ResultStatus.Success)
       return {
         status: ResultStatus.Unauthorized,
@@ -26,13 +36,31 @@ export const authService = {
         data: null,
       };
 
-    const accessToken = await jwtService.createToken(
-      result.data!._id.toString(),
+    const userId = result.data?._id.toString()!;
+    const deviceId = uuidv4();
+
+    const accessToken = await jwtService.createToken(userId);
+    const refreshToken = await authService.generateRefreshToken(
+      userId,
+      deviceId,
     );
 
-    const refreshToken = await authService.generateRefreshToken(
-      result.data!._id.toString(),
-    );
+    const lastActivateRefreshToken = await jwtService.decodeToken(refreshToken);
+
+    const iat = Number(new Date(Number(lastActivateRefreshToken.iat)));
+
+    const newSession: SessionsDBModel = {
+      user_id: userId,
+      device_id: deviceId,
+      user_agent: titleDevice,
+      ip: ipDevice,
+      iat: iat,
+      exp: iat + Number(appConfig.REFRESH_TIME),
+    };
+
+    await deviceRepository.createSession(newSession);
+
+    console.log("newSession: ", newSession);
 
     return {
       status: ResultStatus.Success,
@@ -44,7 +72,7 @@ export const authService = {
   async checkUserCredentials(
     loginOrEmail: string,
     password: string,
-  ): Promise<Result<WithId<IUserDB> | null>> {
+  ): Promise<ResultType<WithId<IUserDB> | null>> {
     const user = await usersRepository.findByLoginOrEmail(loginOrEmail);
     if (!user)
       return {
@@ -76,7 +104,7 @@ export const authService = {
     login: string,
     pass: string,
     email: string,
-  ): Promise<Result<User | null>> {
+  ): Promise<ResultType<User | null>> {
     const user = await usersRepository.doesExistByLoginOrEmail(login, email);
     if (user)
       return {
@@ -106,11 +134,14 @@ export const authService = {
     };
   },
 
-  async generateRefreshToken(userId: string): Promise<string> {
-    return jwtService.createRefreshToken(userId);
+  async generateRefreshToken(
+    userId: string,
+    deviceId: string,
+  ): Promise<string> {
+    return jwtService.createRefreshToken(userId, deviceId);
   },
 
-  async confirmEmail(code: string): Promise<Result<any> | boolean> {
+  async confirmEmail(code: string): Promise<ResultType<any> | boolean> {
     const user = await usersRepository.findUserByConfirmationCode(code);
     if (!user)
       return {
@@ -161,12 +192,12 @@ export const authService = {
 
     return {
       status: ResultStatus.Success,
-      data: result.userId,
+      data: result.data?.userId,
       extensions: [],
     };
   },
 
-  async checkRefreshToken(token: string): Promise<Result<IdType | null>> {
+  async checkRefreshToken(token: string): Promise<ResultType<IdType | null>> {
     const result = await jwtService.verifyToken(token, appConfig.RT_SECRET);
 
     console.log("result checkRefreshToken", result);

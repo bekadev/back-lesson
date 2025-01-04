@@ -1,5 +1,6 @@
 import { randomUUID } from "crypto";
 import { Response, Router } from "express";
+import { v4 as uuidv4 } from "uuid";
 import { emailExamples } from "../../common/adapters/emailExamples";
 import { jwtService } from "../../common/adapters/jwt.service";
 import { nodemailerService } from "../../common/adapters/nodemailer.service";
@@ -15,6 +16,7 @@ import type {
   RequestWithUserId,
 } from "../../common/types/requests";
 import { inputValidation } from "../../common/validation/input.validation";
+import { deviceRepository } from "../session/session.repository";
 import {
   emailValidation,
   emailResendValidation,
@@ -30,6 +32,11 @@ import { blacklistRepository } from "./blacklist.repository";
 import { accessTokenGuard } from "./guards/access.token.guard";
 import { refreshTokenGuard } from "./guards/refresh.token.guard";
 import { codeValidation } from "./middlewares/code.validation";
+import {
+  registrationLimiter,
+  emailLimiter,
+  loginLimiter,
+} from "./middlewares/login.limiter";
 import { LoginInputDto } from "./types/login.input.dto";
 
 export const authRouter = Router();
@@ -40,6 +47,7 @@ authRouter.post(
   loginValidation,
   emailValidation,
   inputCheckErrorsMiddleware,
+  registrationLimiter,
   async (req: RequestWithBody<CreateUserInputDto>, res: Response) => {
     const { login, email, password } = req.body;
 
@@ -55,6 +63,7 @@ authRouter.post(
   routersPaths.auth.registrationConfirmation,
   codeValidation,
   inputCheckErrorsMiddleware,
+  registrationLimiter,
   async (req: RequestWithBody<{ code: string }>, res: Response) => {
     const { code } = req.body;
 
@@ -101,6 +110,7 @@ authRouter.post(
   routersPaths.auth.registrationEmailResending,
   emailResendValidation,
   inputCheckErrorsMiddleware,
+  emailLimiter,
   async (req: RequestWithBody<{ email: string }>, res: Response) => {
     const { email } = req.body;
 
@@ -148,16 +158,25 @@ authRouter.post(
   passwordValidation,
   loginOrEmailValidation,
   inputValidation,
+  loginLimiter,
   async (req: RequestWithBody<LoginInputDto>, res: Response) => {
     const { loginOrEmail, password } = req.body;
-    const result = await authService.loginUser(loginOrEmail, password);
+    const userAgent = req.headers["user-agent"] as string;
+    const ipDevice = req.ip as string;
+
+    const result = await authService.loginUser(
+      loginOrEmail,
+      password,
+      ipDevice,
+      userAgent,
+    );
 
     if (result.status !== ResultStatus.Success) {
       return res
         .status(resultCodeToHttpException(result.status))
         .send(result.extensions);
     }
-    console.log("refrresh for cookie", result.data!.refreshToken);
+
     res.cookie("refreshToken", result.data!.refreshToken, {
       httpOnly: true,
       secure: true,
@@ -177,6 +196,15 @@ authRouter.post(
     try {
       const { refreshToken } = req.cookies;
 
+      const decodedToken = await jwtService.verifyToken(
+        refreshToken,
+        appConfig.RT_SECRET,
+      );
+
+      const userId = decodedToken.data?.userId!;
+      const deviceId = decodedToken.data?.deviceId!;
+
+      await deviceRepository.deleteSession(userId, deviceId);
       await blacklistRepository.addToken(refreshToken);
 
       res.clearCookie("refreshToken");
@@ -210,11 +238,21 @@ authRouter.post(
         refreshToken,
         appConfig.RT_SECRET,
       );
+      const deviceId = uuidv4();
+      const userId = decodedToken.data?.userId!;
 
-      const userId = decodedToken?.userId!;
       const newAccessToken = await jwtService.createToken(userId);
-      const newRefreshToken = await jwtService.createRefreshToken(userId);
-
+      const newRefreshToken = await jwtService.createRefreshToken(
+        userId,
+        deviceId,
+      );
+      const updatedSession = {
+        user_id: userId,
+        device_id: deviceId,
+        iat: decodedToken.data?.iat!,
+        exp: decodedToken.data?.exp!,
+      };
+      await deviceRepository.updateSession(updatedSession);
       await blacklistRepository.addToken(refreshToken);
 
       res.cookie("refreshToken", newRefreshToken, {

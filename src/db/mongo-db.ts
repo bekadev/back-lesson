@@ -16,6 +16,10 @@ export const usersCollection: Collection<User> = db.collection<User>(
   SETTINGS.USERS_COLLECTION_NAME,
 );
 
+export const devicesCollection: Collection<any> = db.collection<any>(
+  SETTINGS.DEVICES_COLLECTION_NAME,
+);
+
 export const blacklistCollection: Collection<{ refreshToken: string }> =
   db.collection<{ refreshToken: string }>(SETTINGS.BLACKLIST_COLLECTION_NAME);
 export const commentsCollection: Collection<CommentsEntityModel> =

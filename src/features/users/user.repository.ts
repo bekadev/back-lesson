@@ -26,11 +26,6 @@ export const usersRepository = {
       "emailConfirmation.confirmationCode": emailConfirmationCode,
     });
   },
-  async doesExistById(id: string): Promise<boolean> {
-    if (!this._checkObjectId(id)) return false;
-    const isUser = await usersCollection.findOne({ _id: new ObjectId(id) });
-    return !!isUser;
-  },
   async doesExistByLoginOrEmail(
     login: string,
     email: string,
@@ -54,10 +49,6 @@ export const usersRepository = {
       { $set: updateFields },
     );
     return result.modifiedCount === 1;
-  },
-  async removeToken(refreshToken: any) {
-    const tokenData = await usersCollection.deleteOne({ refreshToken });
-    return tokenData;
   },
   _checkObjectId(id: string): boolean {
     return ObjectId.isValid(id);

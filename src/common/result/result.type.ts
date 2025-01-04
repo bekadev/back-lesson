@@ -1,13 +1,20 @@
-import {ResultStatus} from "./resultCode";
+import type { ResultStatus } from "./resultCode";
 
-type ExtensionType = {
-	field: string | null;
-	message: string;
+export type ExtensionType = {
+  field: string | null;
+  message: string;
 };
 
-export type Result<T = null> = {
-	status: ResultStatus;
-	errorMessage?: string;
-	extensions: ExtensionType[];
-	data: T;
+// export type Result<T = null> = {
+// 	status: ResultStatus;
+// 	errorMessage?: string;
+// 	extensions: ExtensionType[];
+// 	data: T;
+// };
+
+export type ResultType<T = null> = {
+  status: ResultStatus;
+  errorMessage?: string;
+  extensions: ExtensionType[];
+  data: T;
 };

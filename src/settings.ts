@@ -17,10 +17,12 @@ export const SETTINGS = {
     USERS: "/users",
     AUTH: "/auth",
     COMMENTS: "/comments",
+    DEVICES: "/security/devices",
   },
   BLOG_COLLECTION_NAME: "blog",
   POST_COLLECTION_NAME: "post",
   USERS_COLLECTION_NAME: "users",
   COMMENTS_COLLECTION_NAME: "comments",
   BLACKLIST_COLLECTION_NAME: "blacklist",
+  DEVICES_COLLECTION_NAME: "devices",
 };
