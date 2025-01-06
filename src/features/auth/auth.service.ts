@@ -9,32 +9,29 @@ import { ResultType } from "../../common/result/result.type";
 import { ResultStatus } from "../../common/result/resultCode";
 import { resultHelpers } from "../../common/result/resultHelpers";
 import type { IdType } from "../../common/types/id";
+import type { RefreshTokenPayload } from "../../common/types/refreshToken";
 import { deviceRepository } from "../session/session.repository";
 import type { SessionsDBModel } from "../session/session.types";
 import { User } from "../users/domain/user.entity";
 import type { IUserDB } from "../users/types/user.db.interface";
 import { usersRepository } from "../users/user.repository";
+import type { LoginUserDto } from "./types/login.input.dto";
 
 export const authService = {
-  async loginUser(
-    loginOrEmail: string,
-    password: string,
-    ipDevice: string,
-    titleDevice: string = "Chrome",
-  ) {
+  async loginUser({ loginOrEmail, password, ip, userAgent }: LoginUserDto) {
     const result = await this.checkUserCredentials(loginOrEmail, password);
 
     if (!resultHelpers.isSuccess(result)) {
       return resultHelpers.unauthorized();
     }
 
-    if (result.status !== ResultStatus.Success)
-      return {
-        status: ResultStatus.Unauthorized,
-        errorMessage: "Unauthorized",
-        extensions: [{ field: "loginOrEmail", message: "Wrong credentials" }],
-        data: null,
-      };
+    // if (result.status !== ResultStatus.Success)
+    //   return {
+    //     status: ResultStatus.Unauthorized,
+    //     errorMessage: "Unauthorized",
+    //     extensions: [{ field: "loginOrEmail", message: "Wrong credentials" }],
+    //     data: null,
+    //   };
 
     const userId = result.data?._id.toString()!;
     const deviceId = uuidv4();
@@ -45,28 +42,47 @@ export const authService = {
       deviceId,
     );
 
-    const lastActivateRefreshToken = await jwtService.decodeToken(refreshToken);
-
-    const iat = Number(new Date(Number(lastActivateRefreshToken.iat)));
+    const decodedToken = (await jwtService.decodeToken(
+      refreshToken,
+    )) as RefreshTokenPayload;
 
     const newSession: SessionsDBModel = {
       user_id: userId,
       device_id: deviceId,
-      user_agent: titleDevice,
-      ip: ipDevice,
-      iat: iat,
-      exp: iat + Number(appConfig.REFRESH_TIME),
+      user_agent: userAgent,
+      ip: ip,
+      iat: decodedToken.iat!,
+      exp: decodedToken.exp!,
     };
 
     await deviceRepository.createSession(newSession);
 
-    console.log("newSession: ", newSession);
+    // console.log("newSession: ", newSession);
 
-    return {
-      status: ResultStatus.Success,
-      data: { accessToken, refreshToken },
-      extensions: [],
-    };
+    return resultHelpers.success({ accessToken, refreshToken });
+  },
+
+  async logOutUser(token: string) {
+    const result = await jwtService.verifyToken(token, appConfig.RT_SECRET);
+
+    if (!resultHelpers.isSuccess(result)) {
+      return resultHelpers.unauthorized();
+    }
+
+    const doesSessionExist = await deviceRepository.doesSessionExists(
+      result.data as RefreshTokenPayload,
+    );
+
+    if (!doesSessionExist) {
+      return resultHelpers.unauthorized();
+    }
+
+    const userId = result.data?.userId!;
+    const deviceId = result.data?.deviceId!;
+
+    await deviceRepository.deleteSession(userId, deviceId);
+
+    return resultHelpers.success(true);
   },
 
   async checkUserCredentials(
@@ -200,9 +216,9 @@ export const authService = {
   async checkRefreshToken(token: string): Promise<ResultType<IdType | null>> {
     const result = await jwtService.verifyToken(token, appConfig.RT_SECRET);
 
-    console.log("result checkRefreshToken", result);
+    //console.log("result checkRefreshToken", result);
 
-    if (!result) {
+    if (!result.data) {
       return {
         status: ResultStatus.Unauthorized,
         errorMessage: "Unauthorized",

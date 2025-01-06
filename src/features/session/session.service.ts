@@ -1,25 +1,29 @@
 import useragent from "express-useragent";
 import { jwtService } from "../../common/adapters/jwt.service";
 import { appConfig } from "../../common/config/config";
+import type { ResultType } from "../../common/result/result.type";
 import { resultHelpers } from "../../common/result/resultHelpers";
 import type { RefreshTokenPayload } from "../../common/types/refreshToken";
 import { deviceRepository } from "./session.repository";
 import type { DeviceViewModel } from "./types";
 
 export const deviceService = {
-  async _checkRefreshToken(refreshToken: string) {
+  async _checkRefreshToken(
+    refreshToken: string,
+  ): Promise<ResultType<RefreshTokenPayload | null>> {
     const jwtResult = await jwtService.verifyToken(
       refreshToken,
       appConfig.RT_SECRET,
     );
 
-    console.log("jwtResult", jwtResult);
+    // console.log("jwtResult", jwtResult);
 
     if (!resultHelpers.isSuccess(jwtResult)) {
-      console.log("1");
+      // console.log("1");
       return resultHelpers.unauthorized();
     }
 
+    // console.log("jwtResult2", jwtResult);
     const doesSessionExists = await deviceRepository.doesSessionExists(
       jwtResult.data,
     );
@@ -35,6 +39,7 @@ export const deviceService = {
     const result = await this._checkRefreshToken(refreshToken);
 
     if (!resultHelpers.isSuccess(result)) {
+      // console.log(result, "getUserDevices result");
       return resultHelpers.unauthorized();
     }
 
@@ -44,11 +49,11 @@ export const deviceService = {
     const mappedDevices: DeviceViewModel[] = [];
 
     for (const device of devices) {
-      console.log("5", device.deviceId);
-      const parsedUserAgent = useragent.parse(device.userAgent || "");
+      // console.log("5", device.device_id);
+      const parsedUserAgent = useragent.parse(device.user_agent || "");
 
       mappedDevices.push({
-        ip: device.ip || "unknow",
+        ip: device.ip || "unknown",
         title: `${parsedUserAgent.browser} ${parsedUserAgent.version}`,
         lastActiveDate: new Date(device.iat).toISOString(),
         deviceId: device.device_id,
@@ -72,7 +77,10 @@ export const deviceService = {
     return resultHelpers.success(true);
   },
 
-  async terminateSessionById(refreshToken: string, deviceId: string) {
+  async terminateSessionById(
+    refreshToken: string,
+    deviceId: string,
+  ): Promise<ResultType<true | null>> {
     const result = await this._checkRefreshToken(refreshToken);
 
     if (!resultHelpers.isSuccess(result)) {
@@ -87,7 +95,7 @@ export const deviceService = {
     }
 
     const userSessions = sessions.filter(
-      (session) => session.userId === userId,
+      (session) => session.user_id === userId,
     );
     if (userSessions.length === 0) {
       return resultHelpers.forbidden();

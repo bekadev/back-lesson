@@ -7,7 +7,6 @@ export const devicesRouter = Router();
 
 const checkRefreshToken = (req: Request, res: Response, next: Function) => {
   const refreshToken = req.cookies.refreshToken;
-  console.log("ERROR");
   if (!refreshToken) {
     res.sendStatus(HttpStatuses.Unauthorized);
     return;
@@ -22,12 +21,12 @@ devicesRouter.get(
     console.log("get dev: ", req.cookies.refreshToken);
     const result = await deviceService.getUserDevices(req.cookies.refreshToken);
 
-    console.log(result);
+    console.log(result, "get sessions result");
     if (!resultHelpers.isSuccess(result)) {
       res.sendStatus(HttpStatuses.Unauthorized);
       return;
     }
-    return res.status(HttpStatuses.Success).json(result?.data);
+    return res.status(HttpStatuses.Success).json(result.data);
   },
 );
 
@@ -43,7 +42,7 @@ devicesRouter.delete(
       res.sendStatus(HttpStatuses.Unauthorized);
       return;
     }
-    return res.status(HttpStatuses.NoContent);
+    return res.sendStatus(HttpStatuses.NoContent);
   },
 );
 
@@ -61,6 +60,6 @@ devicesRouter.delete(
       res.sendStatus(resultHelpers.resultCodeToHttpException(result.status));
       return;
     }
-    return res.status(HttpStatuses.NoContent);
+    return res.sendStatus(HttpStatuses.NoContent);
   },
 );

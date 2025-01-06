@@ -1,6 +1,5 @@
 import { randomUUID } from "crypto";
-import { Response, Router } from "express";
-import { v4 as uuidv4 } from "uuid";
+import { Response, Request, Router, type NextFunction } from "express";
 import { emailExamples } from "../../common/adapters/emailExamples";
 import { jwtService } from "../../common/adapters/jwt.service";
 import { nodemailerService } from "../../common/adapters/nodemailer.service";
@@ -8,7 +7,7 @@ import { appConfig } from "../../common/config/config";
 import { inputCheckErrorsMiddleware } from "../../common/middleware/input-check-errors-middleware";
 import { routersPaths } from "../../common/path/paths";
 import { ResultStatus } from "../../common/result/resultCode";
-import { resultCodeToHttpException } from "../../common/result/resultCodeToHttpException";
+import { resultHelpers } from "../../common/result/resultHelpers";
 import { HttpStatuses } from "../../common/types/httpStatuses";
 import type { IdType } from "../../common/types/id";
 import type {
@@ -38,6 +37,21 @@ import {
   loginLimiter,
 } from "./middlewares/login.limiter";
 import { LoginInputDto } from "./types/login.input.dto";
+
+const refreshTokenMiddleware = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  const refreshToken: string = req.cookies.refreshToken;
+
+  if (!refreshToken) {
+    res.sendStatus(HttpStatuses.Unauthorized);
+    return;
+  }
+
+  next();
+};
 
 export const authRouter = Router();
 
@@ -100,7 +114,7 @@ authRouter.post(
 
       return res.sendStatus(HttpStatuses.NoContent);
     } catch (error) {
-      console.error("Error during registration confirmation:", error);
+      // console.error("Error during registration confirmation:", error);
       return res.sendStatus(HttpStatuses.ServerError);
     }
   },
@@ -139,15 +153,13 @@ authRouter.post(
         });
       }
 
-      await nodemailerService.sendEmail(
-        user.email,
-        newCode,
-        emailExamples.registrationEmail,
-      );
+      nodemailerService
+        .sendEmail(user.email, newCode, emailExamples.registrationEmail)
+        .then((result) => console.log(result));
 
       return res.sendStatus(HttpStatuses.NoContent);
     } catch (error) {
-      console.error("Error during email resending:", error);
+      // console.error("Error during email resending:", error);
       return res.sendStatus(HttpStatuses.ServerError);
     }
   },
@@ -161,23 +173,26 @@ authRouter.post(
   loginLimiter,
   async (req: RequestWithBody<LoginInputDto>, res: Response) => {
     const { loginOrEmail, password } = req.body;
-    const userAgent = req.headers["user-agent"] as string;
-    const ipDevice = req.ip as string;
 
-    const result = await authService.loginUser(
-      loginOrEmail,
-      password,
-      ipDevice,
-      userAgent,
-    );
+    const result = await authService.loginUser({
+      loginOrEmail: loginOrEmail,
+      password: password,
+      ip: req.ip as string,
+      userAgent: req.headers["user-agent"] as string,
+    });
 
-    if (result.status !== ResultStatus.Success) {
-      return res
-        .status(resultCodeToHttpException(result.status))
-        .send(result.extensions);
+    if (!resultHelpers.isSuccess(result)) {
+      res.sendStatus(HttpStatuses.Unauthorized);
+      return;
     }
 
-    res.cookie("refreshToken", result.data!.refreshToken, {
+    // if (result.status !== ResultStatus.Success) {
+    //   return res
+    //     .status(resultCodeToHttpException(result.status))
+    //     .send(result.extensions);
+    // }
+
+    res.cookie("refreshToken", result.data.refreshToken, {
       httpOnly: true,
       secure: true,
       sameSite: "lax",
@@ -185,7 +200,7 @@ authRouter.post(
 
     return res
       .status(HttpStatuses.Success)
-      .send({ accessToken: result.data!.accessToken });
+      .send({ accessToken: result.data.accessToken });
   },
 );
 
@@ -196,15 +211,13 @@ authRouter.post(
     try {
       const { refreshToken } = req.cookies;
 
-      const decodedToken = await jwtService.verifyToken(
-        refreshToken,
-        appConfig.RT_SECRET,
-      );
+      const result = await authService.logOutUser(refreshToken);
 
-      const userId = decodedToken.data?.userId!;
-      const deviceId = decodedToken.data?.deviceId!;
+      if (!resultHelpers.isSuccess(result)) {
+        res.sendStatus(resultHelpers.resultCodeToHttpException(result.status));
+        return;
+      }
 
-      await deviceRepository.deleteSession(userId, deviceId);
       await blacklistRepository.addToken(refreshToken);
 
       res.clearCookie("refreshToken");
@@ -234,23 +247,34 @@ authRouter.post(
   async (req: RequestWithBody<{ refreshToken: string }>, res: Response) => {
     try {
       const { refreshToken } = req.cookies;
-      const decodedToken = await jwtService.verifyToken(
+      const result = await jwtService.verifyToken(
         refreshToken,
         appConfig.RT_SECRET,
       );
-      const deviceId = uuidv4();
-      const userId = decodedToken.data?.userId!;
 
+      // console.log(decodedToken, " decodedToken");
+      const deviceId = result.data?.deviceId!;
+      const userId = result.data?.userId!;
+      // if (!decodedToken.data) return res.sendStatus(401);
+      // console.log("before found session");
+      // const foundSession = await deviceRepository.doesSessionExists(
+      //   decodedToken!.data!,
+      // );
+      // console.log(foundSession, " foundSession");
+      // if (!foundSession) return res.sendStatus(401);
       const newAccessToken = await jwtService.createToken(userId);
       const newRefreshToken = await jwtService.createRefreshToken(
         userId,
         deviceId,
       );
+      const decodedNewToken = (await jwtService.decodeToken(
+        newRefreshToken,
+      )) as Record<string, number>;
       const updatedSession = {
         user_id: userId,
         device_id: deviceId,
-        iat: decodedToken.data?.iat!,
-        exp: decodedToken.data?.exp!,
+        iat: decodedNewToken.iat!,
+        exp: decodedNewToken.exp!,
       };
       await deviceRepository.updateSession(updatedSession);
       await blacklistRepository.addToken(refreshToken);
@@ -266,6 +290,7 @@ authRouter.post(
         .status(HttpStatuses.Success)
         .send({ accessToken: newAccessToken });
     } catch (error) {
+      console.log(error, " errro");
       return res.status(HttpStatuses.ServerError).send({
         errorMessage: "Internal server error",
       });

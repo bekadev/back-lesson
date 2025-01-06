@@ -16,14 +16,18 @@ export const jwtService = {
       expiresIn: `${appConfig.REFRESH_TIME}s`,
     });
   },
-  async decodeToken(token: string): Promise<any> {
-    try {
-      return jwt.decode(token);
-    } catch (e: unknown) {
-      console.error("Can't decode token", e);
-      return null;
-    }
+  // async decodeToken(token: string): Promise<any> {
+  //   try {
+  //     return jwt.decode(token);
+  //   } catch (e: unknown) {
+  //     console.error("Can't decode token", e);
+  //     return null;
+  //   }
+  // },
+  async decodeToken(token: string): Promise<JwtPayload | string | null> {
+    return jwt.decode(token);
   },
+
   async verifyToken(
     token: string,
     secret: string,

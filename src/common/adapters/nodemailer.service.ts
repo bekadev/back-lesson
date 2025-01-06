@@ -7,10 +7,10 @@ export const nodemailerService = {
     code: string,
     template: (code: string) => string,
   ): Promise<boolean> {
-    console.log({
-      user: appConfig.EMAIL,
-      pass: appConfig.EMAIL_PASS,
-    });
+    // console.log({
+    //   user: appConfig.EMAIL,
+    //   pass: appConfig.EMAIL_PASS,
+    // });
     let transporter = nodemailer.createTransport({
       service: "gmail",
       auth: {
@@ -26,7 +26,7 @@ export const nodemailerService = {
       html: template(code), // html body
     });
 
-    console.log(info);
+    // console.log(info);
 
     return !!info;
   },
