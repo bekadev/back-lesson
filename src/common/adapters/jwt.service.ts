@@ -39,6 +39,7 @@ export const jwtService = {
       ) as JwtPayload as RefreshTokenPayload;
       return resultHelpers.success(result);
     } catch (e) {
+      console.error(e);
       return resultHelpers.unauthorized();
     }
   },
