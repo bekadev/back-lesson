@@ -7,13 +7,13 @@ import type { RefreshTokenPayload } from "../types/refreshToken";
 export const jwtService = {
   async createToken(userId: string): Promise<string> {
     return jwt.sign({ userId }, appConfig.AC_SECRET, {
-      expiresIn: `${appConfig.AC_TIME}s`,
+      expiresIn: `${appConfig.AC_TIME}s` as any,
     });
   },
   async createRefreshToken(userId: string, deviceId: string): Promise<string> {
     console.log("secret for create refToken", appConfig.RT_SECRET);
     return jwt.sign({ userId, deviceId }, appConfig.RT_SECRET, {
-      expiresIn: `${appConfig.REFRESH_TIME}s`,
+      expiresIn: `${appConfig.REFRESH_TIME}s` as any,
     });
   },
   // async decodeToken(token: string): Promise<any> {

@@ -17,7 +17,7 @@ app.use(cors());
 app.set("trust proxy", true);
 
 app.get("/", (req, res) => {
-  res.status(200).json({ version: "6.0" });
+  res.status(200).json({ version: "7.0" });
 });
 app.use(SETTINGS.PATH.BLOGS, blogsRouter);
 app.use(SETTINGS.PATH.POSTS, postsRouter);
