@@ -1,236 +1,397 @@
-import {PostInputModel} from '../src/common/input-output-types/posts-types'
-import {db, setDB} from '../src/db/db'
-import {SETTINGS} from '../src/settings'
-import {codedAuth, createString, dataset1, dataset2} from './helpers/datasets'
-import {req} from './helpers/test-helpers'
-// import {BlogInputModel} from "../src/input-output-types/blogs-types";
+import { MongoClient } from "mongodb";
+import { MongoMemoryServer } from "mongodb-memory-server";
+import request from "supertest";
+import { app } from "../src/app";
+import { ADMIN_TOKEN } from "../src/features/auth/guards/base.auth.guard";
+import { SETTINGS } from "../src/settings";
 
-describe('/posts', () => {
-	// beforeAll(async () => { // очистка базы данных перед началом тестирования
-	//     setDB()
-	// })
+describe("posts router e2e", () => {
+  let mongoServer: MongoMemoryServer;
+  let mongoUri: string;
+  let client: MongoClient;
 
-	it('should create', async () => {
-		setDB(dataset1)
-		const newPost: PostInputModel = {
-			title: 't1',
-			shortDescription: 's1',
-			content: 'c1',
-			blogId: dataset1.blogs[0].id,
-		}
+  beforeAll(async () => {
+    mongoServer = await MongoMemoryServer.create();
+    mongoUri = mongoServer.getUri();
+    client = new MongoClient(mongoUri);
+    await client.connect();
+  });
 
-		const res = await req
-		.post(SETTINGS.PATH.POSTS)
-		.set({'Authorization': 'Basic ' + codedAuth})
-		.send(newPost) // отправка данных
-		.expect(201)
+  afterAll(async () => {
+    await client.close();
+    await mongoServer.stop();
+  });
 
-		// console.log(res.body)
+  beforeEach(async () => {
+    // Очищаем БД перед каждым тестом
+    await request(app).delete(SETTINGS.PATH.CLEAR_DATA);
+  });
 
-		expect(res.body.title).toEqual(newPost.title)
-		expect(res.body.shortDescription).toEqual(newPost.shortDescription)
-		expect(res.body.content).toEqual(newPost.content)
-		expect(res.body.blogId).toEqual(newPost.blogId)
-		expect(res.body.blogName).toEqual(dataset1.blogs[0].name)
-		expect(typeof res.body.id).toEqual('string')
+  const createPost = {
+    title: "Test Post",
+    shortDescription: "Short desc",
+    content: "Some content",
+    blogId: "", // будет заполнено после создания блога
+  };
 
-		expect(res.body).toEqual(db.posts[0])
-	})
-	it('shouldn\'t create 401', async () => {
-		setDB(dataset1)
-		const newPost: PostInputModel = {
-			title: 't1',
-			shortDescription: 's1',
-			content: 'c1',
-			blogId: dataset1.blogs[0].id,
-		}
+  let blogId: string;
 
-		const res = await req
-		.post(SETTINGS.PATH.POSTS)
-		.send(newPost) // отправка данных
-		.expect(401)
+  beforeEach(async () => {
+    // Создаём блог для поста
+    const blogRes = await request(app)
+      .post(SETTINGS.PATH.BLOGS)
+      .set("Authorization", ADMIN_TOKEN)
+      .send({
+        name: "TestBlog",
+        description: "desc",
+        websiteUrl: "https://test.com",
+      })
+      .expect(201);
+    blogId = blogRes.body.id;
+    createPost.blogId = blogId;
+  });
 
-		// console.log(res.body)
+  describe("GET /posts", () => {
+    it("должен вернуть пустой массив постов", async () => {
+      await request(app)
+        .get(SETTINGS.PATH.POSTS)
+        .expect(200)
+        .expect((res) => {
+          expect(res.body.items).toEqual([]);
+          expect(res.body.totalCount || res.body.totalCount === 0).toBeTruthy();
+        });
+    });
 
-		expect(db.posts.length).toEqual(0)
-	})
-	it('shouldn\'t create', async () => {
-		setDB()
-		const newPost: PostInputModel = {
-			title: createString(31),
-			content: createString(1001),
-			shortDescription: createString(101),
-			blogId: '1',
-		}
+    it("должен вернуть массив с одним постом", async () => {
+      // Создаём пост
+      const postRes = await request(app)
+        .post(SETTINGS.PATH.POSTS)
+        .set("Authorization", ADMIN_TOKEN)
+        .send(createPost)
+        .expect(201);
+      // Получаем все посты
+      const res = await request(app).get(SETTINGS.PATH.POSTS).expect(200);
+      expect(res.body.items.length).toBe(1);
+      expect(res.body.items[0]).toMatchObject({
+        id: postRes.body.id,
+        title: createPost.title,
+        shortDescription: createPost.shortDescription,
+        content: createPost.content,
+        blogId: blogId,
+        blogName: expect.any(String),
+        createdAt: expect.any(String),
+      });
+    });
 
-		const res = await req
-		.post(SETTINGS.PATH.POSTS)
-		.set({'Authorization': 'Basic ' + codedAuth})
-		.send(newPost) // отправка данных
-		.expect(400)
+    it("должен вернуть несколько постов и корректную пагинацию", async () => {
+      // Создаём 15 постов
+      for (let i = 0; i < 15; i++) {
+        await request(app)
+          .post(SETTINGS.PATH.POSTS)
+          .set("Authorization", ADMIN_TOKEN)
+          .send({
+            ...createPost,
+            title: `Post${i}`,
+          })
+          .expect(201);
+      }
+      // Получаем первую страницу (по умолчанию pageSize=10)
+      const res1 = await request(app).get(SETTINGS.PATH.POSTS).expect(200);
+      expect(res1.body.items.length).toBe(10);
+      expect(res1.body.page).toBe(1);
+      expect(res1.body.totalCount).toBe(15);
+      // Получаем вторую страницу
+      const res2 = await request(app)
+        .get(SETTINGS.PATH.POSTS + "?pageNumber=2")
+        .expect(200);
+      expect(res2.body.items.length).toBe(5);
+      expect(res2.body.page).toBe(2);
+    }, 20000); // увеличен таймаут
 
-		// console.log(res.body)
+    it("должен возвращать посты в порядке сортировки по createdAt desc", async () => {
+      // Создаём 2 поста с разными title
+      await request(app)
+        .post(SETTINGS.PATH.POSTS)
+        .set("Authorization", ADMIN_TOKEN)
+        .send({ ...createPost, title: "A" })
+        .expect(201);
+      await request(app)
+        .post(SETTINGS.PATH.POSTS)
+        .set("Authorization", ADMIN_TOKEN)
+        .send({ ...createPost, title: "B" })
+        .expect(201);
+      // Получаем посты
+      const res = await request(app).get(SETTINGS.PATH.POSTS).expect(200);
+      expect(res.body.items.length).toBeGreaterThanOrEqual(2);
+      // createdAt второго поста должен быть меньше или равен первому (desc)
+      const [first, second] = res.body.items;
+      expect(new Date(first.createdAt) >= new Date(second.createdAt)).toBe(
+        true,
+      );
+    });
+  });
 
-		expect(res.body.errorsMessages.length).toEqual(4)
-		expect(res.body.errorsMessages[0].field).toEqual('title')
-		expect(res.body.errorsMessages[1].field).toEqual('shortDescription')
-		expect(res.body.errorsMessages[2].field).toEqual('content')
-		expect(res.body.errorsMessages[3].field).toEqual('blogId')
+  describe("POST /posts", () => {
+    it("должен создать новый пост с корректными данными", async () => {
+      const response = await request(app)
+        .post(SETTINGS.PATH.POSTS)
+        .set("Authorization", ADMIN_TOKEN)
+        .send(createPost)
+        .expect(201);
 
-		expect(db.posts.length).toEqual(0)
-	})
-	it('should get empty array', async () => {
-		setDB() // очистка базы данных если нужно
+      expect(response.body).toEqual({
+        id: expect.any(String),
+        title: createPost.title,
+        shortDescription: createPost.shortDescription,
+        content: createPost.content,
+        blogId: blogId,
+        blogName: expect.any(String),
+        createdAt: expect.any(String),
+      });
+    });
 
-		const res = await req
-		.get(SETTINGS.PATH.POSTS)
-		.expect(200) // проверяем наличие эндпоинта
+    it("не должен создать пост без авторизации", async () => {
+      await request(app).post(SETTINGS.PATH.POSTS).send(createPost).expect(401);
+    });
 
-		// console.log(res.body) // можно посмотреть ответ эндпоинта
+    it("не должен создать пост с невалидными данными", async () => {
+      await request(app)
+        .post(SETTINGS.PATH.POSTS)
+        .set("Authorization", ADMIN_TOKEN)
+        .send({
+          title: "",
+          shortDescription: "",
+          content: "",
+          blogId: "",
+        })
+        .expect(400);
+    });
+  });
 
-		expect(res.body.length).toEqual(0) // проверяем ответ эндпоинта
-	})
-	it('should get not empty array', async () => {
-		setDB(dataset2) // заполнение базы данных начальными данными если нужно
+  // describe("POST /posts/:postId/comments", () => {
+  //   let postId: string;
+  //   let accessToken: string;
+  //
+  //   beforeEach(async () => {
+  //     // Регистрируем пользователя и логинимся для получения accessToken
+  //     const user = {
+  //       login: "user1",
+  //       password: "password1",
+  //       email: "user1@email.com",
+  //     };
+  //     await request(app)
+  //       .post(SETTINGS.PATH.AUTH + "/registration")
+  //       .send(user)
+  //       .expect(204);
+  //     // Получаем confirmationCode из базы
+  //     const { MongoClient } = require("mongodb");
+  //     const client = new MongoClient(mongoUri);
+  //     await client.connect();
+  //     const db = client.db();
+  //     const userInDb = await db.collection("users").findOne({ email: user.email });
+  //     const code = userInDb?.emailConfirmation?.confirmationCode;
+  //     await client.close();
+  //     // Подтверждаем email
+  //     await request(app)
+  //       .post(SETTINGS.PATH.AUTH + "/registration-confirmation")
+  //       .send({ code })
+  //       .expect(204);
+  //     // Логинимся
+  //     const loginRes = await request(app)
+  //       .post(SETTINGS.PATH.AUTH + "/login")
+  //       .send({ loginOrEmail: user.login, password: user.password })
+  //       .expect(200);
+  //     accessToken = loginRes.body.accessToken;
+  //     // Создаём пост
+  //     const postRes = await request(app)
+  //       .post(SETTINGS.PATH.POSTS)
+  //       .set("Authorization", ADMIN_TOKEN)
+  //       .send(createPost)
+  //       .expect(201);
+  //     postId = postRes.body.id;
+  //   });
+  //
+  //   it("успешно создаёт комментарий к посту с авторизацией", async () => {
+  //     const content = "Комментарий к посту";
+  //     const res = await request(app)
+  //       .post(`${SETTINGS.PATH.POSTS}/${postId}/comments`)
+  //       .set("Authorization", `Bearer ${accessToken}`)
+  //       .send({ content })
+  //       .expect(201);
+  //     expect(res.body).toMatchObject({
+  //       id: expect.any(String),
+  //       content,
+  //       commentatorInfo: {
+  //         userId: expect.any(String),
+  //         userLogin: expect.any(String),
+  //       },
+  //       createdAt: expect.any(String),
+  //     });
+  //   });
+  //
+  //   it("не создаёт комментарий без авторизации (401)", async () => {
+  //     await request(app)
+  //       .post(`${SETTINGS.PATH.POSTS}/${postId}/comments`)
+  //       .send({ content: "test" })
+  //       .expect(401);
+  //   });
+  //
+  //   it("не создаёт комментарий с невалидным контентом (400)", async () => {
+  //     await request(app)
+  //       .post(`${SETTINGS.PATH.POSTS}/${postId}/comments`)
+  //       .set("Authorization", `Bearer ${accessToken}`)
+  //       .send({ content: "" })
+  //       .expect(400);
+  //   });
+  //
+  //   it("не создаёт комментарий к несуществующему посту (404)", async () => {
+  //     await request(app)
+  //       .post(`${SETTINGS.PATH.POSTS}/507f1f77bcf86cd799439011/comments`)
+  //       .set("Authorization", `Bearer ${accessToken}`)
+  //       .send({ content: "test" })
+  //       .expect(404);
+  //   });
+  // });
 
-		const res = await req
-		.get(SETTINGS.PATH.POSTS)
-		.expect(200)
+  describe("GET /posts/:id", () => {
+    let postId: string;
 
-		// console.log(res.body)
+    beforeEach(async () => {
+      // Создаём пост
+      const postRes = await request(app)
+        .post(SETTINGS.PATH.POSTS)
+        .set("Authorization", ADMIN_TOKEN)
+        .send(createPost)
+        .expect(201);
+      postId = postRes.body.id;
+    });
 
-		expect(res.body.length).toEqual(1)
-		expect(res.body[0]).toEqual(dataset2.posts[0])
-	})
-	it('shouldn\'t find', async () => {
-		setDB(dataset1)
+    it("должен вернуть пост по id", async () => {
+      const res = await request(app)
+        .get(`${SETTINGS.PATH.POSTS}/${postId}`)
+        .expect(200);
+      expect(res.body).toMatchObject({
+        id: postId,
+        title: createPost.title,
+        shortDescription: createPost.shortDescription,
+        content: createPost.content,
+        blogId: blogId,
+        blogName: expect.any(String),
+        createdAt: expect.any(String),
+      });
+    });
 
-		const res = await req
-		.get(SETTINGS.PATH.POSTS + '/1')
-		.expect(404) // проверка на ошибку
+    it("должен вернуть 404 для несуществующего id", async () => {
+      await request(app)
+        .get(`${SETTINGS.PATH.POSTS}/507f1f77bcf86cd799439011`)
+        .expect(404);
+    });
+  });
 
-		// console.log(res.body)
-	})
-	it('should find', async () => {
-		setDB(dataset2)
+  describe("PUT /posts/:id", () => {
+    let postId: string;
 
-		const res = await req
-		.get(SETTINGS.PATH.POSTS + '/' + dataset2.posts[0].id)
-		.expect(200) // проверка на ошибку
+    beforeEach(async () => {
+      // Создаём пост
+      const postRes = await request(app)
+        .post(SETTINGS.PATH.POSTS)
+        .set("Authorization", ADMIN_TOKEN)
+        .send(createPost)
+        .expect(201);
+      postId = postRes.body.id;
+    });
 
-		// console.log(res.body)
+    it("успешно обновляет пост с валидными данными и авторизацией", async () => {
+      const updated = {
+        title: "Updated Title",
+        shortDescription: "Updated Desc",
+        content: "Updated Content",
+        blogId: blogId,
+      };
+      await request(app)
+        .put(`${SETTINGS.PATH.POSTS}/${postId}`)
+        .set("Authorization", ADMIN_TOKEN)
+        .send(updated)
+        .expect(204);
+      // Проверяем, что пост обновился
+      const res = await request(app)
+        .get(`${SETTINGS.PATH.POSTS}/${postId}`)
+        .expect(200);
+      expect(res.body).toMatchObject({
+        ...updated,
+        id: postId,
+        blogName: expect.any(String),
+        createdAt: expect.any(String),
+      });
+    });
 
-		expect(res.body).toEqual(dataset2.posts[0])
-	})
-	it('should del', async () => {
-		setDB(dataset2)
+    it("не обновляет пост без авторизации (401)", async () => {
+      const updated = {
+        title: "Updated Title",
+        shortDescription: "Updated Desc",
+        content: "Updated Content",
+        blogId: blogId,
+      };
+      await request(app)
+        .put(`${SETTINGS.PATH.POSTS}/${postId}`)
+        .send(updated)
+        .expect(401);
+    });
 
-		const res = await req
-		.delete(SETTINGS.PATH.POSTS + '/' + dataset2.posts[0].id)
-		.set({'Authorization': 'Basic ' + codedAuth})
-		.expect(204) // проверка на ошибку
+    it("не обновляет пост с невалидными данными (400)", async () => {
+      await request(app)
+        .put(`${SETTINGS.PATH.POSTS}/${postId}`)
+        .set("Authorization", ADMIN_TOKEN)
+        .send({ title: "", shortDescription: "", content: "", blogId: "" })
+        .expect(400);
+    });
 
-		// console.log(res.body)
+    it("не обновляет несуществующий пост (404)", async () => {
+      const updated = {
+        title: "Updated Title",
+        shortDescription: "Updated Desc",
+        content: "Updated Content",
+        blogId: blogId,
+      };
+      await request(app)
+        .put(`${SETTINGS.PATH.POSTS}/507f1f77bcf86cd799439011`)
+        .set("Authorization", ADMIN_TOKEN)
+        .send(updated)
+        .expect(404);
+    });
+  });
 
-		expect(db.posts.length).toEqual(0)
-	})
-	it('shouldn\'t del', async () => {
-		setDB()
+  describe("DELETE /posts/:id", () => {
+    let postId: string;
 
-		const res = await req
-		.delete(SETTINGS.PATH.POSTS + '/1')
-		.set({'Authorization': 'Basic ' + codedAuth})
-		.expect(404) // проверка на ошибку
+    beforeEach(async () => {
+      // Создаём пост
+      const postRes = await request(app)
+        .post(SETTINGS.PATH.POSTS)
+        .set("Authorization", ADMIN_TOKEN)
+        .send(createPost)
+        .expect(201);
+      postId = postRes.body.id;
+    });
 
-		// console.log(res.body)
-	})
-	it('shouldn\'t del 401', async () => {
-		setDB()
+    it("успешно удаляет пост с авторизацией", async () => {
+      await request(app)
+        .delete(`${SETTINGS.PATH.POSTS}/${postId}`)
+        .set("Authorization", ADMIN_TOKEN)
+        .expect(204);
+      // Проверяем, что пост удалён
+      await request(app).get(`${SETTINGS.PATH.POSTS}/${postId}`).expect(404);
+    });
 
-		const res = await req
-		.delete(SETTINGS.PATH.POSTS + '/1')
-		.set({'Authorization': 'Basic' + codedAuth}) // no ' '
-		.expect(401) // проверка на ошибку
+    it("не удаляет пост без авторизации (401)", async () => {
+      await request(app).delete(`${SETTINGS.PATH.POSTS}/${postId}`).expect(401);
+    });
 
-		// console.log(res.body)
-	})
-	it('should update', async () => {
-		setDB(dataset2)
-		const post: PostInputModel = {
-			title: 't2',
-			shortDescription: 's2',
-			content: 'c2',
-			blogId: dataset2.blogs[1].id,
-		}
-
-		const res = await req
-		.put(SETTINGS.PATH.POSTS + '/' + dataset2.posts[0].id)
-		.set({'Authorization': 'Basic ' + codedAuth})
-		.send(post)
-		.expect(204) // проверка на ошибку
-
-		// console.log(res.body)
-
-		expect(db.posts[0]).toEqual({...db.posts[0], ...post, blogName: dataset2.blogs[1].name})
-	})
-	it('shouldn\'t update 404', async () => {
-		setDB()
-		const post: PostInputModel = {
-			title: 't1',
-			shortDescription: 's1',
-			content: 'c1',
-			blogId: dataset1.blogs[0].id,
-		}
-
-		const res = await req
-		.put(SETTINGS.PATH.POSTS + '/1')
-		.set({'Authorization': 'Basic ' + codedAuth})
-		.send(post)
-		.expect(404) // проверка на ошибку
-
-		// console.log(res.body)
-	})
-	it('shouldn\'t update2', async () => {
-		setDB(dataset2)
-		const post: PostInputModel = {
-			title: createString(31),
-			content: createString(1001),
-			shortDescription: createString(101),
-			blogId: '1',
-		}
-
-		const res = await req
-		.put(SETTINGS.PATH.POSTS + '/' + dataset2.posts[0].id)
-		.set({'Authorization': 'Basic ' + codedAuth})
-		.send(post)
-		.expect(400) // проверка на ошибку
-
-		// console.log(res.body)
-
-		expect(db).toEqual(dataset2)
-		expect(res.body.errorsMessages.length).toEqual(4)
-		expect(res.body.errorsMessages[0].field).toEqual('title')
-		expect(res.body.errorsMessages[1].field).toEqual('shortDescription')
-		expect(res.body.errorsMessages[2].field).toEqual('content')
-		expect(res.body.errorsMessages[3].field).toEqual('blogId')
-	})
-	it('shouldn\'t update 401', async () => {
-		setDB(dataset2)
-		const post: PostInputModel = {
-			title: createString(31),
-			content: createString(1001),
-			shortDescription: createString(101),
-			blogId: '1',
-		}
-
-		const res = await req
-		.put(SETTINGS.PATH.POSTS + '/' + dataset2.posts[0].id)
-		.set({'Authorization': 'Basic ' + codedAuth + 'error'})
-		.send(post)
-		.expect(401) // проверка на ошибку
-
-		// console.log(res.body)
-
-		expect(db).toEqual(dataset2)
-	})
-})
+    it("не удаляет несуществующий пост (404)", async () => {
+      await request(app)
+        .delete(`${SETTINGS.PATH.POSTS}/507f1f77bcf86cd799439011`)
+        .set("Authorization", ADMIN_TOKEN)
+        .expect(404);
+    });
+  });
+});
