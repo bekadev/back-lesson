@@ -205,7 +205,8 @@ authRouter.post(
 );
 
 authRouter.post(
-  routersPaths.auth.logout,
+  "/logout",
+  // routersPaths.auth.logout,
   refreshTokenGuard,
   async (req, res) => {
     try {
@@ -242,7 +243,8 @@ authRouter.get(
 );
 
 authRouter.post(
-  routersPaths.auth.refreshToken,
+  "/refresh-token",
+  // routersPaths.auth.refreshToken,
   refreshTokenGuard,
   async (req: RequestWithBody<{ refreshToken: string }>, res: Response) => {
     try {
