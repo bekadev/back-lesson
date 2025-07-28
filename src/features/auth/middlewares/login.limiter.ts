@@ -11,13 +11,13 @@ export const loginLimiter = rateLimit({
 export const registrationLimiter = rateLimit({
   windowMs: 10 * 1000,
   limit: 5,
-  message: "Too many login attempts, please try again after 10 seconds",
+  message: "Too many registration attempts, please try again after 10 seconds",
   statusCode: HttpStatuses.TooManyRequests,
 });
 
 export const emailLimiter = rateLimit({
   windowMs: 10 * 1000,
   limit: 5,
-  message: "Too many login attempts, please try again after 10 seconds",
+  message: "Too many email requests, please try again after 10 seconds",
   statusCode: HttpStatuses.TooManyRequests,
 });

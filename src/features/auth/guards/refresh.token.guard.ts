@@ -9,7 +9,10 @@ export const refreshTokenGuard = async (
   res: Response,
   next: NextFunction,
 ) => {
-  if (!req.cookies) return res.sendStatus(HttpStatuses.Unauthorized);
+  if (!req.cookies) {
+    console.log("BOOOOMMMM");
+    return res.sendStatus(HttpStatuses.Unauthorized);
+  }
   const { refreshToken } = req.cookies;
 
   //console.log("req.cookies.refreshToken", req.cookies.refreshToken);
@@ -17,16 +20,18 @@ export const refreshTokenGuard = async (
   const isBlacklisted =
     await blacklistRepository.isTokenBlacklisted(refreshToken);
   if (isBlacklisted) {
+    console.log("BOOOOMMMM 111");
     return res.sendStatus(HttpStatuses.Unauthorized);
   }
 
   const result = await authService.checkRefreshToken(req.cookies.refreshToken);
   // console.log("req.headers.cookie", req.headers.cookie);
-  // console.log(req.cookies, " cookies");
-  //console.log("result", result);
+  console.log(req.cookies, " cookies");
+  console.log("result", result);
   if (result.status === ResultStatus.Success) {
     req.user = result.data!;
     return next();
   }
+  console.log("BOOOOMMMM  3333");
   return res.sendStatus(HttpStatuses.Unauthorized);
 };

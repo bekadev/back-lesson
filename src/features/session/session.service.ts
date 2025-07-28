@@ -4,6 +4,7 @@ import { appConfig } from "../../common/config/config";
 import type { ResultType } from "../../common/result/result.type";
 import { resultHelpers } from "../../common/result/resultHelpers";
 import type { RefreshTokenPayload } from "../../common/types/refreshToken";
+import { blacklistRepository } from "../auth/blacklist.repository";
 import { deviceRepository } from "./session.repository";
 import type { DeviceViewModel } from "./types";
 
@@ -73,7 +74,25 @@ export const deviceService = {
     const userId = result.data.userId!;
     const deviceId = result.data.deviceId!;
 
+    // Получаем все сессии пользователя, кроме текущей
+    const allSessions = await deviceRepository.getSessionsByUserId(userId);
+    const otherSessions = allSessions.filter(
+      (session) => session.device_id !== deviceId,
+    );
+
+    // Удаляем сессии из базы данных
     await deviceRepository.deleteAllOtherUserSession(userId, deviceId);
+
+    // Добавляем refresh tokens в черный список
+    for (const session of otherSessions) {
+      // Создаем refresh token для каждой сессии и добавляем в черный список
+      const sessionRefreshToken = await jwtService.createRefreshToken(
+        session.user_id,
+        session.device_id,
+      );
+      await blacklistRepository.addToken(sessionRefreshToken);
+    }
+
     return resultHelpers.success(true);
   },
 
@@ -101,10 +120,18 @@ export const deviceService = {
       return resultHelpers.forbidden();
     }
 
+    // Удаляем сессии из базы данных
     await deviceRepository.deleteAllSessionsByUserIdAndDeviceId(
       userId,
       deviceId,
     );
+
+    // Добавляем refresh token в черный список
+    const sessionRefreshToken = await jwtService.createRefreshToken(
+      userId,
+      deviceId,
+    );
+    await blacklistRepository.addToken(sessionRefreshToken);
 
     return resultHelpers.success(true);
   },

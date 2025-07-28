@@ -17,29 +17,15 @@ export const adminMiddleware = (
   res: Response,
   next: NextFunction,
 ) => {
-  const auth = req.headers["authorization"] as string; // 'Basic xxxx'
-  // console.log(auth)
-  if (!auth) {
-    res.status(401).json({});
-    return;
-  }
-  if (auth.slice(0, 6) !== "Basic ") {
-    res.status(401).json({});
-    return;
-  }
-
-  const codedAuth = fromUTF8ToBase64(SETTINGS.ADMIN_AUTH);
-
-  const decodedAuth = fromBase64ToUTF8(auth.slice(6));
-  // console.log(decodedAuth)
-  if (decodedAuth !== SETTINGS.ADMIN_AUTH) {
+  const receivedToken = req.headers.authorization;
+  if (!receivedToken) {
     res.sendStatus(401);
     return;
   }
-  if (auth.slice(6) !== codedAuth) {
-    res.status(401).json({});
+  const etalonToken = "Basic " + fromUTF8ToBase64(SETTINGS.ADMIN_AUTH);
+  if (receivedToken !== etalonToken) {
+    res.sendStatus(401);
     return;
   }
-
   next();
 };

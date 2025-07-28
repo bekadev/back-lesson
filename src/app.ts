@@ -14,10 +14,11 @@ export const app = express();
 app.use(express.json());
 app.use(cookieParser());
 app.use(cors());
+// app.set("trust proxy", false);
 app.set("trust proxy", true);
 
 app.get("/", (req, res) => {
-  res.status(200).json({ version: "7.0" });
+  res.status(200).json({ version: "11.0" });
 });
 app.use(SETTINGS.PATH.BLOGS, blogsRouter);
 app.use(SETTINGS.PATH.POSTS, postsRouter);

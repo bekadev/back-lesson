@@ -46,6 +46,15 @@ const refreshTokenMiddleware = async (
   const refreshToken: string = req.cookies.refreshToken;
 
   if (!refreshToken) {
+    console.log("RRRRRRR");
+    res.sendStatus(HttpStatuses.Unauthorized);
+    return;
+  }
+
+  const isBlacklisted =
+    await blacklistRepository.isTokenBlacklisted(refreshToken);
+  if (isBlacklisted) {
+    console.log("BOOOOMMMM 111");
     res.sendStatus(HttpStatuses.Unauthorized);
     return;
   }
@@ -57,11 +66,11 @@ export const authRouter = Router();
 
 authRouter.post(
   routersPaths.auth.registration,
+  registrationLimiter,
   passwordValidation,
   loginValidation,
   emailValidation,
   inputCheckErrorsMiddleware,
-  registrationLimiter,
   async (req: RequestWithBody<CreateUserInputDto>, res: Response) => {
     const { login, email, password } = req.body;
 
@@ -75,102 +84,90 @@ authRouter.post(
 
 authRouter.post(
   routersPaths.auth.registrationConfirmation,
+  registrationLimiter,
   codeValidation,
   inputCheckErrorsMiddleware,
-  registrationLimiter,
   async (req: RequestWithBody<{ code: string }>, res: Response) => {
     const { code } = req.body;
 
-    try {
-      const user = await usersRepository.findUserByConfirmationCode(code);
+    const user = await usersRepository.findUserByConfirmationCode(code);
 
-      if (!user) {
-        return res.status(HttpStatuses.BadRequest).send({
-          errorsMessages: [
-            { field: "code", message: "Invalid confirmation code" },
-          ],
-        });
-      }
-
-      if (user.emailConfirmation.isConfirmed) {
-        return res.status(HttpStatuses.BadRequest).send({
-          errorsMessages: [
-            { field: "code", message: "Email is already confirmed" },
-          ],
-        });
-      }
-
-      user.emailConfirmation.isConfirmed = true;
-
-      const isUpdated = await usersRepository.update(user);
-
-      if (!isUpdated) {
-        return res.status(HttpStatuses.ServerError).send({
-          errorsMessages: [
-            { field: "code", message: "Failed to confirm email" },
-          ],
-        });
-      }
-
-      return res.sendStatus(HttpStatuses.NoContent);
-    } catch (error) {
-      // console.error("Error during registration confirmation:", error);
-      return res.sendStatus(HttpStatuses.ServerError);
+    if (!user) {
+      return res.status(HttpStatuses.BadRequest).send({
+        errorsMessages: [
+          { field: "code", message: "Invalid confirmation code" },
+        ],
+      });
     }
+
+    if (user.emailConfirmation.isConfirmed) {
+      return res.status(HttpStatuses.BadRequest).send({
+        errorsMessages: [
+          { field: "code", message: "Email is already confirmed" },
+        ],
+      });
+    }
+
+    user.emailConfirmation.isConfirmed = true;
+
+    const isUpdated = await usersRepository.update(user);
+
+    if (!isUpdated) {
+      return res.status(HttpStatuses.ServerError).send({
+        errorsMessages: [{ field: "code", message: "Failed to confirm email" }],
+      });
+    }
+
+    return res.sendStatus(HttpStatuses.NoContent);
   },
 );
 
 authRouter.post(
   routersPaths.auth.registrationEmailResending,
+  emailLimiter,
   emailResendValidation,
   inputCheckErrorsMiddleware,
-  emailLimiter,
   async (req: RequestWithBody<{ email: string }>, res: Response) => {
     const { email } = req.body;
 
-    try {
-      const user = await usersRepository.findByLoginOrEmail(email);
-      if (!user || user.emailConfirmation.isConfirmed) {
-        return res.status(HttpStatuses.BadRequest).send({
-          errorsMessages: [
-            {
-              field: "email",
-              message: "Email is already confirmed or invalid",
-            },
-          ],
-        });
-      }
-
-      const newCode = randomUUID();
-      user.emailConfirmation.confirmationCode = newCode;
-
-      const isUpdated = await usersRepository.update(user);
-      if (!isUpdated) {
-        return res.status(HttpStatuses.ServerError).send({
-          errorsMessages: [
-            { field: "email", message: "Failed to resend confirmation email" },
-          ],
-        });
-      }
-
-      nodemailerService
-        .sendEmail(user.email, newCode, emailExamples.registrationEmail)
-        .then((result) => console.log(result));
-
-      return res.sendStatus(HttpStatuses.NoContent);
-    } catch (error) {
-      // console.error("Error during email resending:", error);
-      return res.sendStatus(HttpStatuses.ServerError);
+    const user = await usersRepository.findByLoginOrEmail(email);
+    if (!user || user.emailConfirmation.isConfirmed) {
+      return res.status(HttpStatuses.BadRequest).send({
+        errorsMessages: [
+          {
+            field: "email",
+            message: "Email is already confirmed or invalid",
+          },
+        ],
+      });
     }
+
+    const newCode = randomUUID();
+    user.emailConfirmation.confirmationCode = newCode;
+
+    const isUpdated = await usersRepository.update(user);
+    if (!isUpdated) {
+      return res.status(HttpStatuses.ServerError).send({
+        errorsMessages: [
+          { field: "email", message: "Failed to resend confirmation email" },
+        ],
+      });
+    }
+
+    nodemailerService
+      .sendEmail(user.email, newCode, emailExamples.registrationEmail)
+      .then((result) => console.log(result));
+
+    return res.sendStatus(HttpStatuses.NoContent);
   },
 );
 
 authRouter.post(
   routersPaths.auth.login,
+  loginLimiter,
   passwordValidation,
   loginOrEmailValidation,
   inputValidation,
-  loginLimiter,
   async (req: RequestWithBody<LoginInputDto>, res: Response) => {
     const { loginOrEmail, password } = req.body;
 
@@ -246,6 +243,7 @@ authRouter.post(
   "/refresh-token",
   // routersPaths.auth.refreshToken,
   refreshTokenGuard,
+  // refreshTokenMiddleware,
   async (req: RequestWithBody<{ refreshToken: string }>, res: Response) => {
     try {
       const { refreshToken } = req.cookies;

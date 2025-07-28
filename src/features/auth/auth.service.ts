@@ -216,15 +216,21 @@ export const authService = {
   async checkRefreshToken(token: string): Promise<ResultType<IdType | null>> {
     const result = await jwtService.verifyToken(token, appConfig.RT_SECRET);
 
-    //console.log("result checkRefreshToken", result);
+    console.log("result checkRefreshToken", result);
 
-    if (!result.data) {
-      return {
-        status: ResultStatus.Unauthorized,
-        errorMessage: "Unauthorized",
-        data: null,
-        extensions: [{ field: null, message: "Havent payload" }],
-      };
+    if (!resultHelpers.isSuccess(result)) {
+      console.log("MMEEEEEEE");
+      return resultHelpers.unauthorized();
+    }
+
+    // Проверяем, существует ли сессия в базе данных
+    const doesSessionExists = await deviceRepository.doesSessionExists(
+      result.data as RefreshTokenPayload,
+    );
+
+    if (!doesSessionExists) {
+      console.log("Session does not exist");
+      return resultHelpers.unauthorized();
     }
 
     return {

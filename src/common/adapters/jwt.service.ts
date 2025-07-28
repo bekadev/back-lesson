@@ -30,13 +30,15 @@ export const jwtService = {
 
   async verifyToken(
     token: string,
-    secret: string,
+    secret?: string,
   ): Promise<ResultType<RefreshTokenPayload | null>> {
     try {
       const result = jwt.verify(
         token,
-        secret,
+        secret || appConfig.RT_SECRET,
       ) as JwtPayload as RefreshTokenPayload;
+      console.log("result", result);
+
       return resultHelpers.success(result);
     } catch (e) {
       console.error(e);

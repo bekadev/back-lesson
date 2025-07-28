@@ -1,17 +1,30 @@
 import { Router, Request, Response } from "express";
 import { resultHelpers } from "../../common/result/resultHelpers";
 import { HttpStatuses } from "../../common/types/httpStatuses";
+import { ResultStatus } from "../../common/types/resultCode";
+import { authService } from "../auth/auth.service";
 import { deviceService } from "./session.service";
 
 export const devicesRouter = Router();
 
-const checkRefreshToken = (req: Request, res: Response, next: Function) => {
+const checkRefreshToken = async (
+  req: Request,
+  res: Response,
+  next: Function,
+) => {
   const refreshToken = req.cookies.refreshToken;
   if (!refreshToken) {
     res.sendStatus(HttpStatuses.Unauthorized);
     return;
   }
-  next();
+
+  const result = await authService.checkRefreshToken(req.cookies.refreshToken);
+  if (result.status === ResultStatus.Success) {
+    req.user = result.data!;
+    return next();
+  }
+
+  return res.sendStatus(HttpStatuses.Unauthorized);
 };
 
 devicesRouter.get(
