@@ -1,17 +1,21 @@
 import { bcryptService } from "../../common/adapters/bcrypt.service";
 import { CreateUserInputDto } from "./types/create.user.input.dto";
 import { IUserDB } from "./types/user.db.interface";
-import { usersRepository } from "./user.repository";
+import { UsersRepository } from "./user.repository";
 
 type CreateUserResult =
   | { success: true; userId: string }
   | { success: false; errorsMessages: { field: string; message: string }[] };
 
-class UsersService {
+export class UsersService {
+  usersRepository: UsersRepository
+  constructor() {
+    this.usersRepository = new UsersRepository()
+  }
   async create(dto: CreateUserInputDto): Promise<CreateUserResult> {
     const { login, password, email } = dto;
 
-    const existingUserByLogin = await usersRepository.findByLoginOrEmail(login);
+    const existingUserByLogin = await this.usersRepository.findByLoginOrEmail(login);
     if (existingUserByLogin) {
       return {
         success: false,
@@ -19,7 +23,7 @@ class UsersService {
       };
     }
 
-    const existingUserByEmail = await usersRepository.findByLoginOrEmail(email);
+    const existingUserByEmail = await this.usersRepository.findByLoginOrEmail(email);
     if (existingUserByEmail) {
       return {
         success: false,
@@ -42,16 +46,14 @@ class UsersService {
       },
     };
 
-    const userId = await usersRepository.create(newUser);
+    const userId = await this.usersRepository.create(newUser);
     return { success: true, userId };
   }
 
   async delete(id: string): Promise<boolean> {
-    const user = await usersRepository.findById(id);
+    const user = await this.usersRepository.findById(id);
     if (!user) return false;
 
-    return await usersRepository.delete(id);
+    return await this.usersRepository.delete(id);
   }
 }
-
-export const usersService = new UsersService()

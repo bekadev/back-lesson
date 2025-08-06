@@ -1,5 +1,6 @@
 import { body } from "express-validator";
-import { usersRepository } from "../user.repository";
+import { UsersRepository } from "../user.repository";
+
 
 export const emailValidation = body("email")
   .isString()
@@ -8,7 +9,7 @@ export const emailValidation = body("email")
   .isEmail()
   .withMessage("email is not correct")
   .custom(async (email: string) => {
-    const user = await usersRepository.findByLoginOrEmail(email);
+    const user = await new UsersRepository().findByLoginOrEmail(email);
     if (user) {
       throw new Error("email already exist");
     }
@@ -22,7 +23,7 @@ export const emailResendValidation = body("email")
   .isEmail()
   .withMessage("email is not correct")
   .custom(async (email: string) => {
-    const user = await usersRepository.findByLoginOrEmail(email);
+    const user = await new UsersRepository().findByLoginOrEmail(email);
     if (!user) {
       throw new Error("User with this email does not exist");
     }

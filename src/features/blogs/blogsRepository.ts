@@ -5,7 +5,7 @@ import {BlogDbType} from "../../db/blog-db-type";
 import {blogCollection, postCollection} from "../../db/mongo-db";
 import type {PostDbType} from "../../db/post-db-type";
 
-class BlogsRepository {
+export class BlogsRepository {
 	async create(blog: BlogEntityModel): Promise<string> {
 		const result = await blogCollection.insertOne(blog);
 		return result.insertedId.toString();
@@ -92,5 +92,3 @@ class BlogsRepository {
 		return await postCollection.countDocuments({blogId});
 	}
 };
-
-export const blogsRepository = new BlogsRepository()

@@ -10,14 +10,20 @@ import { ResultStatus } from "../../common/result/resultCode";
 import { resultHelpers } from "../../common/result/resultHelpers";
 import type { IdType } from "../../common/types/id";
 import type { RefreshTokenPayload } from "../../common/types/refreshToken";
-import { deviceRepository } from "../session/session.repository";
 import type { SessionsDBModel } from "../session/session.types";
 import { User } from "../users/domain/user.entity";
 import type { IUserDB } from "../users/types/user.db.interface";
-import { usersRepository } from "../users/user.repository";
+import { UsersRepository } from "../users/user.repository";
 import type { LoginUserDto } from "./types/login.input.dto";
+import { DeviceRepository } from "../session/session.repository";
 
-class AuthService {
+export class AuthService {
+  deviceRepository: DeviceRepository
+  usersRepository: UsersRepository
+  constructor() {
+    this.deviceRepository = new DeviceRepository()
+    this.usersRepository = new UsersRepository()
+  }
   async loginUser({ loginOrEmail, password, ip, userAgent }: LoginUserDto) {
     const result = await this.checkUserCredentials(loginOrEmail, password);
 
@@ -29,7 +35,7 @@ class AuthService {
     const deviceId = uuidv4();
 
     const accessToken = await jwtService.createToken(userId);
-    const refreshToken = await authService.generateRefreshToken(
+    const refreshToken = await this.generateRefreshToken(
       userId,
       deviceId,
     );
@@ -47,7 +53,7 @@ class AuthService {
       exp: decodedToken.exp!,
     };
 
-    await deviceRepository.createSession(newSession);
+    await this.deviceRepository.createSession(newSession);
 
     // console.log("newSession: ", newSession);
 
@@ -61,7 +67,7 @@ class AuthService {
       return resultHelpers.unauthorized();
     }
 
-    const doesSessionExist = await deviceRepository.doesSessionExists(
+    const doesSessionExist = await this.deviceRepository.doesSessionExists(
       result.data as RefreshTokenPayload,
     );
 
@@ -72,7 +78,7 @@ class AuthService {
     const userId = result.data?.userId!;
     const deviceId = result.data?.deviceId!;
 
-    await deviceRepository.deleteSession(userId, deviceId);
+    await this.deviceRepository.deleteSession(userId, deviceId);
 
     return resultHelpers.success(true);
   }
@@ -81,7 +87,7 @@ class AuthService {
     loginOrEmail: string,
     password: string,
   ): Promise<ResultType<WithId<IUserDB> | null>> {
-    const user = await usersRepository.findByLoginOrEmail(loginOrEmail);
+    const user = await this.usersRepository.findByLoginOrEmail(loginOrEmail);
     if (!user)
       return {
         status: ResultStatus.NotFound,
@@ -113,7 +119,7 @@ class AuthService {
     pass: string,
     email: string,
   ): Promise<ResultType<User | null>> {
-    const user = await usersRepository.doesExistByLoginOrEmail(login, email);
+    const user = await this.usersRepository.doesExistByLoginOrEmail(login, email);
     if (user)
       return {
         status: ResultStatus.BadRequest,
@@ -126,7 +132,7 @@ class AuthService {
 
     const newUser = new User(login, email, passwordHash);
 
-    await usersRepository.create(newUser);
+    await this.usersRepository.create(newUser);
 
     nodemailerService
       .sendEmail(
@@ -150,7 +156,7 @@ class AuthService {
   }
 
   async confirmEmail(code: string): Promise<ResultType<any> | boolean> {
-    const user = await usersRepository.findUserByConfirmationCode(code);
+    const user = await this.usersRepository.findUserByConfirmationCode(code);
     if (!user)
       return {
         status: ResultStatus.NotFound,
@@ -174,7 +180,7 @@ class AuthService {
     if (user.emailConfirmation.confirmationCode !== code) return false;
     if (user.emailConfirmation.isConfirmed) return false;
     if (user.emailConfirmation.expirationDate > new Date()) {
-      return await usersRepository.updateConfirmation(user._id);
+      return await this.usersRepository.updateConfirmation(user._id);
     }
 
     return {
@@ -216,7 +222,7 @@ class AuthService {
     }
 
     // Проверяем, существует ли сессия в базе данных
-    const doesSessionExists = await deviceRepository.doesSessionExists(
+    const doesSessionExists = await this.deviceRepository.doesSessionExists(
       result.data as RefreshTokenPayload,
     );
 
@@ -232,5 +238,3 @@ class AuthService {
     };
   }
 }
-
-export const authService = new AuthService()

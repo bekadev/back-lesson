@@ -1,78 +1,26 @@
-import { Router, Request, Response } from "express";
-import { resultHelpers } from "../../common/result/resultHelpers";
-import { HttpStatuses } from "../../common/types/httpStatuses";
-import { ResultStatus } from "../../common/types/resultCode";
-import { authService } from "../auth/auth.service";
-import { deviceService } from "./session.service";
+import { Router } from "express";
+import { checkRefreshToken } from "../../common/middleware/auth-middleware";
+import { sessionController } from "./controllers";
 
 export const devicesRouter = Router();
-
-const checkRefreshToken = async (
-  req: Request,
-  res: Response,
-  next: Function,
-) => {
-  const refreshToken = req.cookies.refreshToken;
-  if (!refreshToken) {
-    res.sendStatus(HttpStatuses.Unauthorized);
-    return;
-  }
-
-  const result = await authService.checkRefreshToken(req.cookies.refreshToken);
-  if (result.status === ResultStatus.Success) {
-    req.user = result.data!;
-    return next();
-  }
-
-  return res.sendStatus(HttpStatuses.Unauthorized);
-};
 
 devicesRouter.get(
   "/",
   checkRefreshToken,
-  async (req: Request, res: Response) => {
-    console.log("get dev: ", req.cookies.refreshToken);
-    const result = await deviceService.getUserDevices(req.cookies.refreshToken);
-
-    console.log(result, "get sessions result");
-    if (!resultHelpers.isSuccess(result)) {
-      res.sendStatus(HttpStatuses.Unauthorized);
-      return;
-    }
-    return res.status(HttpStatuses.Success).json(result.data);
-  },
+  sessionController.getUserDevices.bind(sessionController),
 );
 
 // Завершение всех сессий, кроме текущей
 devicesRouter.delete(
   "/",
   checkRefreshToken,
-  async (req: Request, res: Response) => {
-    const result = await deviceService.terminateAllOtherSessions(
-      req.cookies.refreshToken,
-    );
-    if (!resultHelpers.isSuccess(result)) {
-      res.sendStatus(HttpStatuses.Unauthorized);
-      return;
-    }
-    return res.sendStatus(HttpStatuses.NoContent);
-  },
+  sessionController.terminateAllOtherSessions.bind(sessionController),
+  
 );
 
 // Завершение сессии конкретного устройства по ID
 devicesRouter.delete(
   "/:deviceId",
   checkRefreshToken,
-  async (req: Request, res: Response) => {
-    const deviceId = req.params.deviceId;
-    const result = await deviceService.terminateSessionById(
-      req.cookies.refreshToken,
-      deviceId,
-    );
-    if (!resultHelpers.isSuccess(result)) {
-      res.sendStatus(resultHelpers.resultCodeToHttpException(result.status));
-      return;
-    }
-    return res.sendStatus(HttpStatuses.NoContent);
-  },
+  sessionController.terminateSessionById.bind(sessionController),
 );

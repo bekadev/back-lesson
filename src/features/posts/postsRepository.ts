@@ -4,7 +4,7 @@ import type {PostEntityModel, PostViewModel} from "../../common/input-output-typ
 import {postCollection, commentsCollection} from "../../db/mongo-db";
 import {PostDbType} from "../../db/post-db-type";
 
-class PostsRepository {
+export class PostsRepository {
 	async create(post: PostEntityModel): Promise<string> {
 		const result = await postCollection.insertOne(post)
 		return result.insertedId.toString()
@@ -79,5 +79,3 @@ class PostsRepository {
 		return await commentsCollection.countDocuments({postId});
 	}
 }
-
-export const postsRepository = new PostsRepository()

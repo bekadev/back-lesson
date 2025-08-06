@@ -2,7 +2,7 @@ import {type WithId, ObjectId} from "mongodb";
 import type {CommentsEntityModel} from "../../common/input-output-types/comments-types";
 import {commentsCollection} from "../../db/mongo-db";
 
-class CommentsRepository {
+export class CommentsRepository {
 	async find(id: string): Promise<WithId<CommentsEntityModel> | null> {
 		return await commentsCollection.findOne({_id: new ObjectId(id)})
 	}
@@ -15,5 +15,3 @@ class CommentsRepository {
 		return !!result.modifiedCount;
 	}
 }
-
-export const commentsRepository = new CommentsRepository()

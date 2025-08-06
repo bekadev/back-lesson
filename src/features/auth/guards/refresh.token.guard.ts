@@ -1,8 +1,8 @@
 import { NextFunction, Request, Response } from "express";
 import { HttpStatuses } from "../../../common/types/httpStatuses";
-import { ResultStatus } from "../../../common/types/resultCode";
-import { authService } from "../auth.service";
+import { ResultStatus } from "../../../common/types/resultCode"
 import { blacklistRepository } from "../blacklist.repository";
+import { AuthService } from "../auth.service";
 
 export const refreshTokenGuard = async (
   req: Request,
@@ -24,7 +24,7 @@ export const refreshTokenGuard = async (
     return res.sendStatus(HttpStatuses.Unauthorized);
   }
 
-  const result = await authService.checkRefreshToken(req.cookies.refreshToken);
+  const result = await new AuthService().checkRefreshToken(req.cookies.refreshToken);
   // console.log("req.headers.cookie", req.headers.cookie);
   console.log(req.cookies, " cookies");
   console.log("result", result);

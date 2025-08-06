@@ -17,6 +17,6 @@ postsRouter.post(
   "/:id/comments",
   accessTokenGuard,
   ...commentsValidators,
-  postControllers.createCommentsForPostController,
+  postControllers.createCommentsForPostController.bind(postControllers),
 );
-postsRouter.get("/:id/comments", postControllers.getCommentsForPostController);
+postsRouter.get("/:id/comments", postControllers.getCommentsForPostController.bind(postControllers));

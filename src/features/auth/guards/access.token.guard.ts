@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import { HttpStatuses } from "../../../common/types/httpStatuses";
 import { ResultStatus } from "../../../common/types/resultCode";
-import { authService } from "../auth.service";
+import { AuthService } from "../auth.service";
 
 export const accessTokenGuard = async (
   req: Request,
@@ -11,7 +11,7 @@ export const accessTokenGuard = async (
   if (!req.headers.authorization)
     return res.sendStatus(HttpStatuses.Unauthorized);
 
-  const result = await authService.checkAccessToken(req.headers.authorization);
+  const result = await new AuthService().checkAccessToken(req.headers.authorization);
 
   if (result.status === ResultStatus.Success) {
     req.user = { id: result.data! };

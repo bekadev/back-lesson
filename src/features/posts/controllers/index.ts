@@ -10,25 +10,29 @@ import {
 	PostViewModel,
 	type PostsPaginationViewModel
 } from "../../../common/input-output-types/posts-types";
-import {postsService} from "../service";
+import {PostsService} from "../service";
 
-class PostController {
+export class PostController {
+	postsService: PostsService
+	constructor() {
+		this.postsService = new PostsService()
+	}
 	async createPostController (req: Request<any, any, PostInputModel>, res: Response<PostViewModel>) {
-		const newPost = await postsService.create(req.body);
+		const newPost = await this.postsService.create(req.body);
 		if (newPost) {
 			return res.status(201).json(newPost);
 		}
 		return res.status(400)
 	}
 	async findPostController (req: Request<{ id: string }>, res: Response<PostViewModel | {}>) {
-		const post = await postsService.find(req.params.id)
+		const post = await this.postsService.find(req.params.id)
 		if (post) {
 			return res.status(200).json(post);
 		}
 		return res.sendStatus(404);
 	}
 	async delPostController (req: Request<{ id: string }>, res: Response) {
-		const isDeleted = await postsService.del(req.params.id)
+		const isDeleted = await this.postsService.del(req.params.id)
 		if (isDeleted) {
 			return res.sendStatus(204);
 		}
@@ -36,7 +40,7 @@ class PostController {
 	}
 	async getPostsController (req: Request, res: Response<PostsPaginationViewModel>) {
 		const {pageNumber, pageSize, sortBy, sortDirection} = paginationQueries(req)
-		const post = await postsService.getAll(
+		const post = await this.postsService.getAll(
 			pageNumber,
 			pageSize,
 			sortBy,
@@ -45,7 +49,7 @@ class PostController {
 		return res.status(200).json(post);
 	}
 	async putPostController (req: Request<{ id: string }, any, PostInputModel>, res: Response) {
-		const updatedPost = await postsService.put(req.body, req.params.id,)
+		const updatedPost = await this.postsService.put(req.body, req.params.id,)
 
 		if (updatedPost) {
 			return res.status(204).json(updatedPost);
@@ -55,14 +59,14 @@ class PostController {
 	async createCommentsForPostController (req: Request<{
 		id: string
 	}, any, CommentsInputModel>, res: Response<CommentsViewModel>) {
-		const postExists = await postsService.find(req.params.id)
+		const postExists = await this.postsService.find(req.params.id)
 		if (!postExists) {
 			return res.sendStatus(404);
 		}
 
 		const userId = req.user?.id
 
-		const comments = await postsService.createCommentsForPost(req.params.id, req.body, userId)
+		const comments = await this.postsService.createCommentsForPost(req.params.id, req.body, userId)
 
 		if (comments) {
 			return res.status(201).json(comments);
@@ -71,13 +75,13 @@ class PostController {
 
 	}
 	async getCommentsForPostController (req: Request<{ id: string }>, res: Response<CommentsPaginationViewModel>) {
-		const postExists = await postsService.find(req.params.id)
+		const postExists = await this.postsService.find(req.params.id)
 		if (!postExists) {
 			return res.sendStatus(404);
 		}
 
 		const {pageNumber, pageSize, sortBy, sortDirection} = paginationQueries(req);
-		const comments = await postsService.getComments(req.params.id, pageNumber, pageSize, sortBy, sortDirection);
+		const comments = await this.postsService.getComments(req.params.id, pageNumber, pageSize, sortBy, sortDirection);
 		return res.status(200).json(comments);
 	}
 }

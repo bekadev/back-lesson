@@ -1,18 +1,23 @@
 import type {WithId} from "mongodb";
 import type {CommentsViewModel, CommentsEntityModel} from "../../../common/input-output-types/comments-types";
-import {commentsRepository} from "../commentsRepository";
+import { CommentsRepository } from "../commentsRepository";
 
-class CommentsService {
+
+export class CommentsService {
+	commentsRepository: CommentsRepository
+	constructor() {
+		this.commentsRepository = new CommentsRepository()
+	}
 	async find(id: string): Promise<CommentsViewModel | null> {
-		const comments = await commentsRepository.find(id)
+		const comments = await this.commentsRepository.find(id)
 		return comments ? this.map(comments) : null;
 
 	}
 	async del(id: string): Promise<boolean> {
-		return await commentsRepository.del(id);
+		return await this.commentsRepository.del(id);
 	}
 	async put(comment: any, id: string): Promise<{ content: string } | null> {
-		const existingComment = await commentsRepository.find(id);
+		const existingComment = await this.commentsRepository.find(id);
 		if (!existingComment) return null;
 
 		const updatedComment = {
@@ -20,7 +25,7 @@ class CommentsService {
 			content: comment.content
 		};
 
-		const result = await commentsRepository.put(updatedComment, id);
+		const result = await this.commentsRepository.put(updatedComment, id);
 		if (result) {
 			return this.map(updatedComment)
 		} else {
@@ -36,5 +41,3 @@ class CommentsService {
 		};
 	}
 }
-
-export const commentsService = new CommentsService()

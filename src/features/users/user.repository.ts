@@ -2,7 +2,7 @@ import { ObjectId, WithId } from "mongodb";
 import { usersCollection } from "../../db/mongo-db";
 import type { User } from "./domain/user.entity";
 
-class UsersRepository {
+export class UsersRepository {
   async create(user: User): Promise<string> {
     const newUser = await usersCollection.insertOne({ ...user });
     return newUser.insertedId.toString();
@@ -54,5 +54,3 @@ class UsersRepository {
     return ObjectId.isValid(id);
   }
 }
-
-export const usersRepository = new UsersRepository()

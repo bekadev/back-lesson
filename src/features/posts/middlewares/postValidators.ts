@@ -1,7 +1,7 @@
 import {body, param} from 'express-validator'
 import {adminMiddleware} from "../../../common/middleware/auth-middleware";
 import {inputCheckErrorsMiddleware} from "../../../common/middleware/input-check-errors-middleware";
-import {blogsRepository} from '../../blogs/blogsRepository'
+import {BlogsRepository} from '../../blogs/blogsRepository'
 
 export const titleValidator = body('title').trim().isString().isLength({min: 1, max: 30}).withMessage('title error')
 export const shortDescriptionValidator = body('shortDescription').trim().isString().isLength({
@@ -14,7 +14,7 @@ export const blogIdValidator = body('blogId')
 .isString().withMessage('blogId must be a string')
 .trim()
 .custom(async (blogId) => {
-	const blog = await blogsRepository.find(blogId);
+	const blog = await new BlogsRepository().find(blogId);
 	if (!blog) {
 		throw new Error('no blog');
 	}
@@ -25,7 +25,7 @@ export const blogIdValidatorParams = param('blogId')
 .isString().withMessage('blogId must be a string')
 .trim()
 .custom(async (blogId) => {
-	const blog = await blogsRepository.find(blogId);
+	const blog = await new BlogsRepository().find(blogId);
 	if (!blog) {
 		throw new Error('no blog');
 	}

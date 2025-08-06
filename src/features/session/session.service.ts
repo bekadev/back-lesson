@@ -5,10 +5,14 @@ import type { ResultType } from "../../common/result/result.type";
 import { resultHelpers } from "../../common/result/resultHelpers";
 import type { RefreshTokenPayload } from "../../common/types/refreshToken";
 import { blacklistRepository } from "../auth/blacklist.repository";
-import { deviceRepository } from "./session.repository";
 import type { DeviceViewModel } from "./types";
+import { DeviceRepository } from "./session.repository";
 
-class DeviceService {
+export class DeviceService {
+  deviceRepository: DeviceRepository
+  constructor() {
+    this.deviceRepository = new DeviceRepository()
+  }
   async _checkRefreshToken(
     refreshToken: string,
   ): Promise<ResultType<RefreshTokenPayload | null>> {
@@ -25,7 +29,7 @@ class DeviceService {
     }
 
     // console.log("jwtResult2", jwtResult);
-    const doesSessionExists = await deviceRepository.doesSessionExists(
+    const doesSessionExists = await this.deviceRepository.doesSessionExists(
       jwtResult.data,
     );
 
@@ -45,7 +49,7 @@ class DeviceService {
     }
 
     const userId = result.data.userId;
-    const devices = await deviceRepository.getSessionsByUserId(userId);
+    const devices = await this.deviceRepository.getSessionsByUserId(userId);
 
     const mappedDevices: DeviceViewModel[] = [];
 
@@ -75,13 +79,13 @@ class DeviceService {
     const deviceId = result.data.deviceId!;
 
     // Получаем все сессии пользователя, кроме текущей
-    const allSessions = await deviceRepository.getSessionsByUserId(userId);
+    const allSessions = await this.deviceRepository.getSessionsByUserId(userId);
     const otherSessions = allSessions.filter(
       (session) => session.device_id !== deviceId,
     );
 
     // Удаляем сессии из базы данных
-    await deviceRepository.deleteAllOtherUserSession(userId, deviceId);
+    await this.deviceRepository.deleteAllOtherUserSession(userId, deviceId);
 
     // Добавляем refresh tokens в черный список
     for (const session of otherSessions) {
@@ -108,7 +112,7 @@ class DeviceService {
 
     const userId = result.data.userId;
 
-    const sessions = await deviceRepository.getSessionsByDeviceId(deviceId);
+    const sessions = await this.deviceRepository.getSessionsByDeviceId(deviceId);
     if (sessions.length === 0) {
       return resultHelpers.notFound();
     }
@@ -121,7 +125,7 @@ class DeviceService {
     }
 
     // Удаляем сессии из базы данных
-    await deviceRepository.deleteAllSessionsByUserIdAndDeviceId(
+    await this.deviceRepository.deleteAllSessionsByUserIdAndDeviceId(
       userId,
       deviceId,
     );
@@ -136,5 +140,3 @@ class DeviceService {
     return resultHelpers.success(true);
   }
 }
-
-export const deviceService = new DeviceService()

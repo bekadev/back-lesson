@@ -2,13 +2,13 @@ import type { RefreshTokenPayload } from "../../common/types/refreshToken";
 import { devicesCollection } from "../../db/mongo-db";
 import type { SessionUpdateDTO, SessionsDBModel } from "./session.types";
 
-export const deviceRepository = {
+export class DeviceRepository {
   async createSession(session: any): Promise<string> {
     const result = await devicesCollection.insertOne(session);
     // console.log("deviceRepository result: ", result);
     // console.log("deviceRepository session: ", session);
     return result.insertedId.toString();
-  },
+  }
 
   async doesSessionExists(data: RefreshTokenPayload): Promise<boolean> {
     // console.error(data, " find device search data ");
@@ -20,7 +20,7 @@ export const deviceRepository = {
       exp: data.exp,
     });
     return !!result;
-  },
+  }
 
   async updateSession(session: SessionUpdateDTO): Promise<boolean> {
     const result = await devicesCollection.updateOne(
@@ -33,7 +33,7 @@ export const deviceRepository = {
       },
     );
     return !!result.modifiedCount;
-  },
+  }
 
   async deleteSession(userId: string, deviceId: string): Promise<boolean> {
     const result = await devicesCollection.deleteOne({
@@ -42,7 +42,7 @@ export const deviceRepository = {
     });
     // console.log("deviceRepository result: ", result);
     return !!result.deletedCount;
-  },
+  }
 
   async deleteAllOtherUserSession(
     userId: string,
@@ -53,18 +53,18 @@ export const deviceRepository = {
       device_id: { $ne: deviceId },
     });
     return !!result.deletedCount;
-  },
+  }
 
   async getSessionsByUserId(userId: string): Promise<SessionsDBModel[]> {
     return await devicesCollection
       .find({ user_id: userId })
       .sort({ iat: -1 })
       .toArray();
-  },
+  }
 
   async getSessionsByDeviceId(deviceId: string): Promise<SessionsDBModel[]> {
     return await devicesCollection.find({ device_id: deviceId }).toArray();
-  },
+  }
 
   async deleteAllSessionsByUserIdAndDeviceId(
     userId: string,
@@ -75,5 +75,5 @@ export const deviceRepository = {
       device_id: deviceId,
     });
     return result.deletedCount;
-  },
-};
+  }
+}

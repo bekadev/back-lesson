@@ -10,12 +10,18 @@ import {
 	type PostsPaginationViewModel
 } from "../../../common/input-output-types/posts-types";
 import {PostDbType} from "../../../db/post-db-type";
-import {blogsRepository} from "../../blogs/blogsRepository";
-import {postsRepository} from "../postsRepository";
+import {BlogsRepository} from "../../blogs/blogsRepository";
+import {PostsRepository} from "../postsRepository";
 
-class PostsService {
+export class PostsService {
+	postsRepository: PostsRepository
+	blogsRepository: BlogsRepository
+	constructor() {
+		this.postsRepository = new PostsRepository()
+		this.blogsRepository = new BlogsRepository()
+	}
 	async create(post: PostInputModel): Promise<PostViewModel | null> {
-		const blog = await blogsRepository.find(post.blogId)
+		const blog = await this.blogsRepository.find(post.blogId)
 		const newPost: PostDbType = {
 			title: post.title,
 			content: post.content,
@@ -25,12 +31,12 @@ class PostsService {
 			createdAt: new Date().toISOString(),
 		}
 
-		const newPostId = await postsRepository.create(newPost)
-		const createdPost = await postsRepository.find(newPostId);
+		const newPostId = await this.postsRepository.create(newPost)
+		const createdPost = await this.postsRepository.find(newPostId);
 		return createdPost ? this.map(createdPost) : null;
 	}
 	async find(id: string): Promise<PostViewModel | null> {
-		const result = await postsRepository.find(id)
+		const result = await this.postsRepository.find(id)
 		return result ? this.map(result) : null;
 	}
 	async getAll(
@@ -39,13 +45,13 @@ class PostsService {
 		sortBy: string,
 		sortDirection: 'desc' | 'asc',
 	): Promise<PostsPaginationViewModel> {
-		const posts = await postsRepository.getAll(
+		const posts = await this.postsRepository.getAll(
 			pageNumber,
 			pageSize,
 			sortBy,
 			sortDirection,
 		)
-		const postsCount = await postsRepository.getPostsCount()
+		const postsCount = await this.postsRepository.getPostsCount()
 		return {
 			pagesCount: Math.ceil(postsCount / pageSize),
 			page: pageNumber,
@@ -55,13 +61,13 @@ class PostsService {
 		}
 	}
 	async del(id: string): Promise<boolean> {
-		return await postsRepository.del(id);
+		return await this.postsRepository.del(id);
 	}
 	async put(post: PostInputModel, id: string): Promise<PostViewModel | null> {
-		const blog = await blogsRepository.find(post.blogId);
+		const blog = await this.blogsRepository.find(post.blogId);
 		if (!blog) return null;
 
-		const existingPost = await postsRepository.find(id)
+		const existingPost = await this.postsRepository.find(id)
 		if (!existingPost) return null;
 
 		const updatedPost = {
@@ -72,7 +78,7 @@ class PostsService {
 			content: post.content
 		};
 
-		const result = await postsRepository.put(updatedPost, id)
+		const result = await this.postsRepository.put(updatedPost, id)
 		if (result) {
 			return this.map(updatedPost)
 		} else {
@@ -93,12 +99,12 @@ class PostsService {
 			postId
 		};
 
-		const isCreated = await postsRepository.createCommentsForPost(newComments);
+		const isCreated = await this.postsRepository.createCommentsForPost(newComments);
 		return isCreated ? this.mapComments({...newComments, id: isCreated}) : null;
 	}
 	async getComments(postId: string, pageNumber: number, pageSize: number, sortBy: string, sortDirection: 'desc' | 'asc'): Promise<CommentsPaginationViewModel> {
-		const comments = await postsRepository.getComments(postId, pageNumber, pageSize, sortBy, sortDirection);
-		const totalCommentsCount = await postsRepository.getCommentsForPost(postId);
+		const comments = await this.postsRepository.getComments(postId, pageNumber, pageSize, sortBy, sortDirection);
+		const totalCommentsCount = await this.postsRepository.getCommentsForPost(postId);
 		return {
 			pagesCount: Math.ceil(totalCommentsCount / pageSize),
 			page: pageNumber,
@@ -131,5 +137,3 @@ class PostsService {
 		}
 	}
 }
-
-export const postsService = new PostsService()

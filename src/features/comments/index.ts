@@ -5,6 +5,6 @@ import {commentsValidators} from "./middlewares/commentsValidators";
 
 export const commentsRouter = Router()
 
-commentsRouter.get('/:id', commentsControllers.findCommentsController)
-commentsRouter.delete('/:id', accessTokenGuard, commentsControllers.delCommentsController)
-commentsRouter.put('/:id', accessTokenGuard, ...commentsValidators, ...commentsValidators, commentsControllers.putCommentsController)
+commentsRouter.get('/:id', commentsControllers.findCommentsController.bind(commentsControllers))
+commentsRouter.delete('/:id', accessTokenGuard, commentsControllers.delCommentsController.bind(commentsControllers))
+commentsRouter.put('/:id', accessTokenGuard, ...commentsValidators, ...commentsValidators, commentsControllers.putCommentsController.bind(commentsControllers))

@@ -11,9 +11,13 @@ import type {
 } from "../../../common/input-output-types/posts-types";
 import type {BlogDbType} from "../../../db/blog-db-type";
 import type {PostDbType} from "../../../db/post-db-type";
-import {blogsRepository} from "../blogsRepository";
+import {BlogsRepository} from "../blogsRepository";
 
-class BlogsService  {
+export class BlogsService  {
+	blogsRepository: BlogsRepository
+	constructor() {
+		this.blogsRepository = new BlogsRepository()
+	}
 	async create(blog: BlogInputModel): Promise<BlogViewModel | null> {
 		const newBlog: BlogDbType = {
 			name: blog.name,
@@ -22,12 +26,12 @@ class BlogsService  {
 			createdAt: new Date().toISOString(),
 			isMembership: false,
 		};
-		const newBlogId = await blogsRepository.create(newBlog);
-		const createdBlog = await blogsRepository.find(newBlogId);
+		const newBlogId = await this.blogsRepository.create(newBlog);
+		const createdBlog = await this.blogsRepository.find(newBlogId);
 		return createdBlog ? this.map(createdBlog) : null;
 	}
 	async find(id: string): Promise<BlogViewModel | null> {
-		const blog = await blogsRepository.find(id);
+		const blog = await this.blogsRepository.find(id);
 		return blog ? this.map(blog) : null;
 	}
 	async getAll(
@@ -37,14 +41,14 @@ class BlogsService  {
 		sortDirection: 'desc' | 'asc',
 		searchNameTerm: string | null
 	): Promise<BlogsPaginationViewModel> {
-		const blogs = await blogsRepository.getAll(
+		const blogs = await this.blogsRepository.getAll(
 			pageNumber,
 			pageSize,
 			sortBy,
 			sortDirection,
 			searchNameTerm
 		);
-		const blogsCount = await blogsRepository.getBlogsCount(searchNameTerm)
+		const blogsCount = await this.blogsRepository.getBlogsCount(searchNameTerm)
 		return {
 			pagesCount: Math.ceil(blogsCount / pageSize),
 			page: pageNumber,
@@ -54,13 +58,13 @@ class BlogsService  {
 		}
 	}
 	async del(id: string): Promise<boolean> {
-		return await blogsRepository.del(id);
+		return await this.blogsRepository.del(id);
 	}
 	async delMany(): Promise<boolean> {
-		return await blogsRepository.delMany(); // Logic inside repository to ensure multiple deletions.
+		return await this.blogsRepository.delMany();	
 	}
 	async put(blog: BlogInputModel, id: string): Promise<BlogViewModel | null> {
-		const existingBlog = await blogsRepository.find(id);
+		const existingBlog = await this.blogsRepository.find(id);
 		if (!existingBlog) return null;
 
 		const updatedBlog = {
@@ -70,7 +74,7 @@ class BlogsService  {
 			websiteUrl: blog.websiteUrl,
 		};
 
-		const result = await blogsRepository.put(updatedBlog, id);
+		const result = await this.blogsRepository.put(updatedBlog, id);
 		if (result) {
 			return this.map(updatedBlog)
 		} else {
@@ -92,13 +96,13 @@ class BlogsService  {
 			createdAt: new Date().toISOString(),
 		};
 
-		const postId = await blogsRepository.createPostForBlog(newPost);
+		const postId = await this.blogsRepository.createPostForBlog(newPost);
 		return postId ? this.mapPost({...newPost, id: postId}) : null;
 	}
 
 	async getPostsForBlog(blogId: string, pageNumber: number, pageSize: number, sortBy: string, sortDirection: 'desc' | 'asc'): Promise<PostsPaginationViewModel> {
-		const posts = await blogsRepository.getPostsForBlog(blogId, pageNumber, pageSize, sortBy, sortDirection);
-		const totalPostsCount = await blogsRepository.getPostsCountForBlog(blogId);
+		const posts = await this.blogsRepository.getPostsForBlog(blogId, pageNumber, pageSize, sortBy, sortDirection);
+		const totalPostsCount = await this.blogsRepository.getPostsCountForBlog(blogId);
 		return {
 			pagesCount: Math.ceil(totalPostsCount / pageSize),
 			page: pageNumber,
@@ -120,7 +124,7 @@ class BlogsService  {
 		};
 	}
 
-	map(blog: WithId<BlogDbType>): BlogViewModel {
+	map(blog: WithId<BlogDbType>): BlogViewModel { // TODO: move to repository
 		return {
 			id: blog._id.toString(),
 			name: blog.name,
@@ -130,6 +134,5 @@ class BlogsService  {
 			isMembership: blog.isMembership,
 		};
 	}
-};
+}
 
-export const blogsService = new BlogsService()

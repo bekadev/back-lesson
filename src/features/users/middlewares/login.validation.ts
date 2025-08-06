@@ -1,5 +1,5 @@
 import { body } from "express-validator";
-import { usersRepository } from "../user.repository";
+import { UsersRepository } from "../user.repository";
 
 export const loginValidation = body("login")
   .isString()
@@ -7,7 +7,7 @@ export const loginValidation = body("login")
   .isLength({ min: 3, max: 10 })
   .withMessage("login is not correct")
   .custom(async (login: string) => {
-    const user = await usersRepository.findByLoginOrEmail(login);
+    const user = await new UsersRepository().findByLoginOrEmail(login);
     if (user) {
       throw new Error("login already exist");
     }
