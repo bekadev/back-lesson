@@ -3,13 +3,8 @@ import {PostViewModel,} from "../../../common/input-output-types/posts-types";
 import {CommentsRepository} from "../commentsRepository";
 import { CommentsService } from "../service";
 
-class CommentsController {
-	commentsService: CommentsService
-	commentsRepository: CommentsRepository
-	constructor() {
-		this.commentsService = new CommentsService()
-		this.commentsRepository = new CommentsRepository()
-	}
+export class CommentsController {
+	constructor(protected commentsService: CommentsService, protected commentsRepository: CommentsRepository) {}
 	async findCommentsController (req: Request<{ id: string }>, res: Response<PostViewModel | {}>) {
 		const post = await this.commentsService.find(req.params.id)
 		if (post) {
@@ -55,5 +50,3 @@ class CommentsController {
 
 	}
 }
-
-export const commentsControllers = new CommentsController()

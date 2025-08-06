@@ -3,6 +3,8 @@ import { SETTINGS } from "../../settings";
 import { HttpStatuses } from "../types/httpStatuses";
 import { ResultStatus } from "../types/resultCode";
 import { AuthService } from "../../features/auth/auth.service";
+import { DeviceRepository } from "../../features/session/session.repository";
+import { UsersRepository } from "../../features/users/user.repository";
 
 export const fromBase64ToUTF8 = (code: string) => {
   const buff = Buffer.from(code, "base64");
@@ -44,7 +46,7 @@ export const checkRefreshToken = async (
     return;
   }
 
-  const result = await new AuthService().checkRefreshToken(req.cookies.refreshToken);
+  const result = await new AuthService(new DeviceRepository(), new UsersRepository()).checkRefreshToken(req.cookies.refreshToken);
   if (result.status === ResultStatus.Success) {
     req.user = result.data!;
     return next();

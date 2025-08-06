@@ -1,9 +1,10 @@
 import { Router } from "express";
 import { adminMiddleware } from "../../common/middleware/auth-middleware";
-import { postControllers } from "../../features/posts/controllers";
+
 import { accessTokenGuard } from "../auth/guards/access.token.guard";
 import { commentsValidators } from "../comments/middlewares/commentsValidators";
 import { postValidators } from "../posts/middlewares/postValidators";
+import { postControllers } from "./compositions-root";
 
 export const postsRouter = Router();
 

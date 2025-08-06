@@ -4,10 +4,7 @@ import { CommentsRepository } from "../commentsRepository";
 
 
 export class CommentsService {
-	commentsRepository: CommentsRepository
-	constructor() {
-		this.commentsRepository = new CommentsRepository()
-	}
+	constructor(protected commentsRepository: CommentsRepository) {}
 	async find(id: string): Promise<CommentsViewModel | null> {
 		const comments = await this.commentsRepository.find(id)
 		return comments ? this.map(comments) : null;

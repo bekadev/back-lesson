@@ -3,6 +3,8 @@ import { HttpStatuses } from "../../../common/types/httpStatuses";
 import { ResultStatus } from "../../../common/types/resultCode"
 import { blacklistRepository } from "../blacklist.repository";
 import { AuthService } from "../auth.service";
+import { DeviceRepository } from "../../session/session.repository";
+import { UsersRepository } from "../../users/user.repository";
 
 export const refreshTokenGuard = async (
   req: Request,
@@ -24,7 +26,7 @@ export const refreshTokenGuard = async (
     return res.sendStatus(HttpStatuses.Unauthorized);
   }
 
-  const result = await new AuthService().checkRefreshToken(req.cookies.refreshToken);
+  const result = await new AuthService(new DeviceRepository(), new UsersRepository()).checkRefreshToken(req.cookies.refreshToken);
   // console.log("req.headers.cookie", req.headers.cookie);
   console.log(req.cookies, " cookies");
   console.log("result", result);

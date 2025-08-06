@@ -18,12 +18,7 @@ import type { LoginUserDto } from "./types/login.input.dto";
 import { DeviceRepository } from "../session/session.repository";
 
 export class AuthService {
-  deviceRepository: DeviceRepository
-  usersRepository: UsersRepository
-  constructor() {
-    this.deviceRepository = new DeviceRepository()
-    this.usersRepository = new UsersRepository()
-  }
+  constructor(protected deviceRepository: DeviceRepository, protected usersRepository: UsersRepository) {}
   async loginUser({ loginOrEmail, password, ip, userAgent }: LoginUserDto) {
     const result = await this.checkUserCredentials(loginOrEmail, password);
 

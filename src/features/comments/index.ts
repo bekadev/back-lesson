@@ -1,10 +1,10 @@
 import {Router} from 'express'
 import {accessTokenGuard} from "../auth/guards/access.token.guard";
-import {commentsControllers} from "./controllers";
+import {commentsController} from "./compositions-root";
 import {commentsValidators} from "./middlewares/commentsValidators";
 
 export const commentsRouter = Router()
 
-commentsRouter.get('/:id', commentsControllers.findCommentsController.bind(commentsControllers))
-commentsRouter.delete('/:id', accessTokenGuard, commentsControllers.delCommentsController.bind(commentsControllers))
-commentsRouter.put('/:id', accessTokenGuard, ...commentsValidators, ...commentsValidators, commentsControllers.putCommentsController.bind(commentsControllers))
+commentsRouter.get('/:id', commentsController.findCommentsController.bind(commentsController))
+commentsRouter.delete('/:id', accessTokenGuard, commentsController.delCommentsController.bind(commentsController))
+commentsRouter.put('/:id', accessTokenGuard, ...commentsValidators, commentsController.putCommentsController.bind(commentsController))

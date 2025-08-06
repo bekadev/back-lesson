@@ -4,10 +4,7 @@ import { DeviceService } from "../session.service";
 import { Request, Response } from "express";
 
 export class SessionController {
-    deviceService: DeviceService
-    constructor() {
-        this.deviceService = new DeviceService()
-    }
+    constructor(protected deviceService: DeviceService) {}
     async getUserDevices(req: Request, res: Response) {
       const result = await this.deviceService.getUserDevices(req.cookies.refreshToken);
       console.log(result, "get sessions result");
@@ -42,5 +39,3 @@ export class SessionController {
       return res.sendStatus(HttpStatuses.NoContent);
     }
   }
-  
-  export const sessionController = new SessionController()

@@ -8,10 +8,7 @@ type CreateUserResult =
   | { success: false; errorsMessages: { field: string; message: string }[] };
 
 export class UsersService {
-  usersRepository: UsersRepository
-  constructor() {
-    this.usersRepository = new UsersRepository()
-  }
+  constructor(protected usersRepository: UsersRepository) {}
   async create(dto: CreateUserInputDto): Promise<CreateUserResult> {
     const { login, password, email } = dto;
 

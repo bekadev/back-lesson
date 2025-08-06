@@ -20,13 +20,8 @@ import { RequestWithUserId } from "../../../common/types/requests";
 import { LoginInputDto } from "../types/login.input.dto";
 
 
-class AuthController {
-    authService: AuthService
-    usersRepository: UsersRepository
-    constructor() {
-        this.authService = new AuthService()
-        this.usersRepository = new UsersRepository()
-    }
+export class AuthController {
+    constructor(protected authService: AuthService, protected usersRepository: UsersRepository) {}
     async registerUser(req: RequestWithBody<CreateUserInputDto>, res: Response) {
       const { login, email, password } = req.body;
       const result = await this.authService.registerUser(login, password, email);
@@ -205,4 +200,4 @@ class AuthController {
     }
   }
   
-  export const authController = new AuthController()
+  

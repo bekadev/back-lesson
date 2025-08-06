@@ -10,10 +10,7 @@ import { sortQueryFieldsUtil } from "../../../common/utils/sortQueryFields.util"
 import { UsersService } from "../user.service";
 
 export class UsersController {
-	usersService: UsersService
-	constructor() {
-		this.usersService = new UsersService()
-	}
+	constructor(protected usersService: UsersService) {}
 
 	async getUsersController(req: RequestWithQuery<UsersQueryFieldsType>, res: Response<IPagination<IUserView[]>>) {
 		const {
@@ -58,5 +55,3 @@ export class UsersController {
 		return res.sendStatus(204);
 	}
 }
-
-export const usersController = new UsersController()

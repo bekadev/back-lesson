@@ -14,12 +14,7 @@ import {BlogsRepository} from "../../blogs/blogsRepository";
 import {PostsRepository} from "../postsRepository";
 
 export class PostsService {
-	postsRepository: PostsRepository
-	blogsRepository: BlogsRepository
-	constructor() {
-		this.postsRepository = new PostsRepository()
-		this.blogsRepository = new BlogsRepository()
-	}
+	constructor(protected postsRepository: PostsRepository, protected blogsRepository: BlogsRepository) {}
 	async create(post: PostInputModel): Promise<PostViewModel | null> {
 		const blog = await this.blogsRepository.find(post.blogId)
 		const newPost: PostDbType = {

@@ -2,7 +2,7 @@ import {Router} from 'express'
 import {adminMiddleware} from "../../common/middleware/auth-middleware";
 import {inputCheckErrorsMiddleware} from "../../common/middleware/input-check-errors-middleware";
 import {titleValidator, shortDescriptionValidator, contentValidator,} from "../posts/middlewares/postValidators";
-import {blogControllers} from "./controllers";
+import {blogControllers} from "./compositions-root";
 import {blogValidators, findBlogValidator} from "./middlewares/blogValidators";
 
 export const blogsRouter = Router()

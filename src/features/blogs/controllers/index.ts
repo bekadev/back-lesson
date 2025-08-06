@@ -12,11 +12,8 @@ import type {
 } from "../../../common/input-output-types/posts-types";
 import {BlogsService} from "../service";
 
-class BlogController {
-	blogsService: BlogsService
-	constructor() {
-		this.blogsService = new BlogsService()
-	}
+export class BlogController {
+	constructor(protected blogsService: BlogsService) {}
 	async createBlogController (req: Request<any, any, BlogInputModel>, res: Response<BlogViewModel>) {
 		const newBlog = await this.blogsService.create(req.body);
 		if (newBlog) {
@@ -87,4 +84,3 @@ class BlogController {
 		return res.status(200).json(posts);
 	}
 };
-export const blogControllers = new BlogController()

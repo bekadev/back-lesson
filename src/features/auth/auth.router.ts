@@ -17,7 +17,7 @@ import {
   emailLimiter,
   loginLimiter,
 } from "./middlewares/login.limiter";
-import { authController } from "./controllers";
+import { authController } from "./compositions-root";
 
 export const authRouter = Router();
 

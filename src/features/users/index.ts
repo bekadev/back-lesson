@@ -6,7 +6,7 @@ import {baseAuthGuard} from "../auth/guards/base.auth.guard";
 import {emailValidation} from "./middlewares/email.validation";
 import {loginValidation} from "./middlewares/login.validation";
 import {passwordValidation} from "./middlewares/password.validation";
-import { usersController } from "./controllers";
+import { usersController } from "./compositions-root";
 
 export const usersRouter = Router()
 

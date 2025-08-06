@@ -13,10 +13,7 @@ import {
 import {PostsService} from "../service";
 
 export class PostController {
-	postsService: PostsService
-	constructor() {
-		this.postsService = new PostsService()
-	}
+	constructor(protected postsService: PostsService) {}
 	async createPostController (req: Request<any, any, PostInputModel>, res: Response<PostViewModel>) {
 		const newPost = await this.postsService.create(req.body);
 		if (newPost) {
@@ -85,5 +82,3 @@ export class PostController {
 		return res.status(200).json(comments);
 	}
 }
-
-export const postControllers = new PostController()

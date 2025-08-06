@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { checkRefreshToken } from "../../common/middleware/auth-middleware";
-import { sessionController } from "./controllers";
+import { sessionController } from "./compositions-root";
 
 export const devicesRouter = Router();
 

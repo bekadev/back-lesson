@@ -14,10 +14,7 @@ import type {PostDbType} from "../../../db/post-db-type";
 import {BlogsRepository} from "../blogsRepository";
 
 export class BlogsService  {
-	blogsRepository: BlogsRepository
-	constructor() {
-		this.blogsRepository = new BlogsRepository()
-	}
+	constructor(protected blogsRepository: BlogsRepository) {}
 	async create(blog: BlogInputModel): Promise<BlogViewModel | null> {
 		const newBlog: BlogDbType = {
 			name: blog.name,

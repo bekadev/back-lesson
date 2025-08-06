@@ -9,10 +9,7 @@ import type { DeviceViewModel } from "./types";
 import { DeviceRepository } from "./session.repository";
 
 export class DeviceService {
-  deviceRepository: DeviceRepository
-  constructor() {
-    this.deviceRepository = new DeviceRepository()
-  }
+  constructor(protected deviceRepository: DeviceRepository) {}
   async _checkRefreshToken(
     refreshToken: string,
   ): Promise<ResultType<RefreshTokenPayload | null>> {
