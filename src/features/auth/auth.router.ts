@@ -38,30 +38,6 @@ import {
 } from "./middlewares/login.limiter";
 import { LoginInputDto } from "./types/login.input.dto";
 
-const refreshTokenMiddleware = async (
-  req: Request,
-  res: Response,
-  next: NextFunction,
-) => {
-  const refreshToken: string = req.cookies.refreshToken;
-
-  if (!refreshToken) {
-    console.log("RRRRRRR");
-    res.sendStatus(HttpStatuses.Unauthorized);
-    return;
-  }
-
-  const isBlacklisted =
-    await blacklistRepository.isTokenBlacklisted(refreshToken);
-  if (isBlacklisted) {
-    console.log("BOOOOMMMM 111");
-    res.sendStatus(HttpStatuses.Unauthorized);
-    return;
-  }
-
-  next();
-};
-
 export const authRouter = Router();
 
 authRouter.post(

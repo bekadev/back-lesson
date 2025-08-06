@@ -8,7 +8,7 @@ import { blacklistRepository } from "../auth/blacklist.repository";
 import { deviceRepository } from "./session.repository";
 import type { DeviceViewModel } from "./types";
 
-export const deviceService = {
+class DeviceService {
   async _checkRefreshToken(
     refreshToken: string,
   ): Promise<ResultType<RefreshTokenPayload | null>> {
@@ -35,7 +35,7 @@ export const deviceService = {
     }
 
     return resultHelpers.success(jwtResult.data as RefreshTokenPayload);
-  },
+  }
   async getUserDevices(refreshToken: string) {
     const result = await this._checkRefreshToken(refreshToken);
 
@@ -62,7 +62,7 @@ export const deviceService = {
     }
 
     return resultHelpers.success(mappedDevices);
-  },
+  }
 
   async terminateAllOtherSessions(refreshToken: string) {
     const result = await this._checkRefreshToken(refreshToken);
@@ -94,7 +94,7 @@ export const deviceService = {
     }
 
     return resultHelpers.success(true);
-  },
+  }
 
   async terminateSessionById(
     refreshToken: string,
@@ -134,5 +134,7 @@ export const deviceService = {
     await blacklistRepository.addToken(sessionRefreshToken);
 
     return resultHelpers.success(true);
-  },
-};
+  }
+}
+
+export const deviceService = new DeviceService()

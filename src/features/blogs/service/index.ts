@@ -13,7 +13,7 @@ import type {BlogDbType} from "../../../db/blog-db-type";
 import type {PostDbType} from "../../../db/post-db-type";
 import {blogsRepository} from "../blogsRepository";
 
-export const blogsService = {
+class BlogsService  {
 	async create(blog: BlogInputModel): Promise<BlogViewModel | null> {
 		const newBlog: BlogDbType = {
 			name: blog.name,
@@ -25,11 +25,11 @@ export const blogsService = {
 		const newBlogId = await blogsRepository.create(newBlog);
 		const createdBlog = await blogsRepository.find(newBlogId);
 		return createdBlog ? this.map(createdBlog) : null;
-	},
+	}
 	async find(id: string): Promise<BlogViewModel | null> {
 		const blog = await blogsRepository.find(id);
 		return blog ? this.map(blog) : null;
-	},
+	}
 	async getAll(
 		pageNumber: number,
 		pageSize: number,
@@ -52,13 +52,13 @@ export const blogsService = {
 			totalCount: blogsCount,
 			items: blogs
 		}
-	},
+	}
 	async del(id: string): Promise<boolean> {
 		return await blogsRepository.del(id);
-	},
+	}
 	async delMany(): Promise<boolean> {
 		return await blogsRepository.delMany(); // Logic inside repository to ensure multiple deletions.
-	},
+	}
 	async put(blog: BlogInputModel, id: string): Promise<BlogViewModel | null> {
 		const existingBlog = await blogsRepository.find(id);
 		if (!existingBlog) return null;
@@ -77,7 +77,7 @@ export const blogsService = {
 			throw new Error()
 		}
 
-	},
+	}
 
 	async createPostForBlog(blogId: string, post: PostInputModel): Promise<PostViewModel | null> {
 		const blogExists = await this.find(blogId);
@@ -94,7 +94,7 @@ export const blogsService = {
 
 		const postId = await blogsRepository.createPostForBlog(newPost);
 		return postId ? this.mapPost({...newPost, id: postId}) : null;
-	},
+	}
 
 	async getPostsForBlog(blogId: string, pageNumber: number, pageSize: number, sortBy: string, sortDirection: 'desc' | 'asc'): Promise<PostsPaginationViewModel> {
 		const posts = await blogsRepository.getPostsForBlog(blogId, pageNumber, pageSize, sortBy, sortDirection);
@@ -106,7 +106,7 @@ export const blogsService = {
 			totalCount: totalPostsCount,
 			items: posts,
 		};
-	},
+	}
 
 	mapPost(post: PostDbType & { id: string }): PostViewModel | null {
 		return {
@@ -118,7 +118,7 @@ export const blogsService = {
 			blogName: post.blogName,
 			createdAt: post.createdAt,
 		};
-	},
+	}
 
 	map(blog: WithId<BlogDbType>): BlogViewModel {
 		return {
@@ -129,5 +129,7 @@ export const blogsService = {
 			createdAt: blog.createdAt,
 			isMembership: blog.isMembership,
 		};
-	},
+	}
 };
+
+export const blogsService = new BlogsService()

@@ -17,21 +17,13 @@ import type { IUserDB } from "../users/types/user.db.interface";
 import { usersRepository } from "../users/user.repository";
 import type { LoginUserDto } from "./types/login.input.dto";
 
-export const authService = {
+class AuthService {
   async loginUser({ loginOrEmail, password, ip, userAgent }: LoginUserDto) {
     const result = await this.checkUserCredentials(loginOrEmail, password);
 
     if (!resultHelpers.isSuccess(result)) {
       return resultHelpers.unauthorized();
     }
-
-    // if (result.status !== ResultStatus.Success)
-    //   return {
-    //     status: ResultStatus.Unauthorized,
-    //     errorMessage: "Unauthorized",
-    //     extensions: [{ field: "loginOrEmail", message: "Wrong credentials" }],
-    //     data: null,
-    //   };
 
     const userId = result.data?._id.toString()!;
     const deviceId = uuidv4();
@@ -60,7 +52,7 @@ export const authService = {
     // console.log("newSession: ", newSession);
 
     return resultHelpers.success({ accessToken, refreshToken });
-  },
+  }
 
   async logOutUser(token: string) {
     const result = await jwtService.verifyToken(token, appConfig.RT_SECRET);
@@ -83,7 +75,7 @@ export const authService = {
     await deviceRepository.deleteSession(userId, deviceId);
 
     return resultHelpers.success(true);
-  },
+  }
 
   async checkUserCredentials(
     loginOrEmail: string,
@@ -115,7 +107,7 @@ export const authService = {
       data: user,
       extensions: [],
     };
-  },
+  }
   async registerUser(
     login: string,
     pass: string,
@@ -148,14 +140,14 @@ export const authService = {
       data: newUser,
       extensions: [],
     };
-  },
+  }
 
   async generateRefreshToken(
     userId: string,
     deviceId: string,
   ): Promise<string> {
     return jwtService.createRefreshToken(userId, deviceId);
-  },
+  }
 
   async confirmEmail(code: string): Promise<ResultType<any> | boolean> {
     const user = await usersRepository.findUserByConfirmationCode(code);
@@ -190,7 +182,7 @@ export const authService = {
       data: null,
       extensions: [],
     };
-  },
+  }
 
   async checkAccessToken(authHeader: string) {
     const [type, token] = authHeader.split(" ");
@@ -211,7 +203,7 @@ export const authService = {
       data: result.data?.userId,
       extensions: [],
     };
-  },
+  }
 
   async checkRefreshToken(token: string): Promise<ResultType<IdType | null>> {
     const result = await jwtService.verifyToken(token, appConfig.RT_SECRET);
@@ -238,5 +230,7 @@ export const authService = {
       data: null,
       extensions: [],
     };
-  },
-};
+  }
+}
+
+export const authService = new AuthService()

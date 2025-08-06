@@ -7,7 +7,7 @@ type CreateUserResult =
   | { success: true; userId: string }
   | { success: false; errorsMessages: { field: string; message: string }[] };
 
-export const usersService = {
+class UsersService {
   async create(dto: CreateUserInputDto): Promise<CreateUserResult> {
     const { login, password, email } = dto;
 
@@ -44,12 +44,14 @@ export const usersService = {
 
     const userId = await usersRepository.create(newUser);
     return { success: true, userId };
-  },
+  }
 
   async delete(id: string): Promise<boolean> {
     const user = await usersRepository.findById(id);
     if (!user) return false;
 
     return await usersRepository.delete(id);
-  },
-};
+  }
+}
+
+export const usersService = new UsersService()

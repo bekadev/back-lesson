@@ -4,14 +4,14 @@ import type {PostEntityModel, PostViewModel} from "../../common/input-output-typ
 import {postCollection, commentsCollection} from "../../db/mongo-db";
 import {PostDbType} from "../../db/post-db-type";
 
-export const postsRepository = {
+class PostsRepository {
 	async create(post: PostEntityModel): Promise<string> {
 		const result = await postCollection.insertOne(post)
 		return result.insertedId.toString()
-	},
+	}
 	async find(id: string): Promise<WithId<PostEntityModel> | null> {
 		return postCollection.findOne({_id: new ObjectId(id)})
-	},
+	}
 	async getAll(
 		pageNumber: number,
 		pageSize: number,
@@ -36,25 +36,25 @@ export const postsRepository = {
 				shortDescription: post.shortDescription
 			}
 		});
-	},
+	}
 	async getPostsCount(): Promise<number> {
 		const filter: any = {}
 		filter.title = {$regex: '', $options: 'i'};
 		return postCollection.countDocuments(filter)
-	},
+	}
 	async del(id: string): Promise<boolean> {
 		const result = await postCollection.deleteOne({_id: new ObjectId(id)})
 		return result.deletedCount == 1
-	},
+	}
 	async put(updatedPost: PostDbType, id: string): Promise<boolean> {
 		const result = await postCollection.updateOne({_id: new ObjectId(id)}, {$set: updatedPost});
 		return !!result.modifiedCount;
 
-	},
+	}
 	async createCommentsForPost(comments: any): Promise<string> {
 		const result = await commentsCollection.insertOne(comments);
 		return result.insertedId.toString();
-	},
+	}
 	async getComments(postId: string, pageNumber: number, pageSize: number, sortBy: string, sortDirection: 'desc' | 'asc') {
 		const comments = await commentsCollection
 		.find({postId})
@@ -74,8 +74,10 @@ export const postsRepository = {
 				createdAt: comment.createdAt
 			}
 		})
-	},
+	}
 	async getCommentsForPost(postId: string): Promise<number> {
 		return await commentsCollection.countDocuments({postId});
-	},
+	}
 }
+
+export const postsRepository = new PostsRepository()

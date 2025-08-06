@@ -8,8 +8,8 @@ import {
 
 export const clearDataRouter = Router();
 
-export const clearDataController = {
-  deleteAllData: async (_: Request, res: Response) => {
+class ClearDataController {
+  async deleteAllData (_: Request, res: Response) {
     try {
       // console.log(1);
       await blogCollection.deleteMany({});
@@ -21,7 +21,7 @@ export const clearDataController = {
     } catch (error) {
       return res.status(500).json({ message: "An error occurred" });
     }
-  },
-};
+  }
+}
 
-clearDataRouter.delete("/", clearDataController.deleteAllData);
+clearDataRouter.delete("/", new ClearDataController().deleteAllData);
